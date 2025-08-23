@@ -169,11 +169,11 @@
   }
 
   function startEdit(which){
+    if (editing[which]) return;
     editing[which] = true;
     const input = els[`${which}Local`];
     input.readOnly = false;
     const len = input.value.length;
-    // Delay focus so mobile browsers recognize the input as editable
     setTimeout(() => {
       input.focus();
       input.setSelectionRange(len, len);
@@ -383,13 +383,16 @@
   els.btns.copy.addEventListener("click", copyAll);
 
   ["off","out","in","on"].forEach((w) => {
-    els[`${w}Local`].addEventListener("input", formatTimeInput);
-    els[`${w}Local`].addEventListener("change", () => updateFromInput(w));
-    els[`${w}Local`].addEventListener("blur", () => {
+    const input = els[`${w}Local`];
+    input.addEventListener("input", formatTimeInput);
+    input.addEventListener("change", () => updateFromInput(w));
+    input.addEventListener("blur", () => {
       editing[w] = false;
-      els[`${w}Local`].readOnly = true;
+      input.readOnly = true;
     });
-    els[`${w}Local`].addEventListener("click", () => startEdit(w));
+    const activate = () => startEdit(w);
+    input.addEventListener("touchstart", activate);
+    input.addEventListener("mousedown", activate);
     els.btns[`${w}Reset`].addEventListener("click", () => resetOne(w));
   });
 
