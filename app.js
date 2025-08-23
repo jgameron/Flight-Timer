@@ -26,7 +26,11 @@
       on: $("#btn-on"),
       reset: $("#btn-reset"),
       copy: $("#btn-copy"),
-      install: $("#btn-install")
+      install: $("#btn-install"),
+      editOff: $("#edit-off"),
+      editOut: $("#edit-out"),
+      editIn: $("#edit-in"),
+      editOn: $("#edit-on"),
     },
     installUI: $("#install-ui")
   };
@@ -52,7 +56,8 @@
   function toLocalString(d) {
     return new Date(d).toLocaleString(undefined, {
       year: "numeric", month: "2-digit", day: "2-digit",
-      hour: "2-digit", minute: "2-digit", second: "2-digit"
+      hour: "2-digit", minute: "2-digit", second: "2-digit",
+      hour12: false
     });
   }
   function toUTCString(d) {
@@ -141,6 +146,24 @@
     render();
   }
 
+  function edit(which) {
+    const current = times[which]
+      ? new Date(times[which]).toISOString().slice(0,19).replace("T", " ")
+      : "";
+    const input = prompt(`Enter local time for ${which.toUpperCase()} (YYYY-MM-DD HH:MM:SS)`,
+      current);
+    if (!input) return;
+    const isoLocal = input.trim().replace(" ", "T");
+    const dt = new Date(isoLocal);
+    if (isNaN(dt)) {
+      alert("Invalid time format");
+      return;
+    }
+    times[which] = dt.toISOString();
+    saveTimes();
+    render();
+  }
+
   function resetAll() {
     if (!confirm("Clear all times?")) return;
     times = { off:null, out:null, in:null, on:null };
@@ -188,6 +211,10 @@
   els.btns.out.addEventListener("click", () => stamp("out"));
   els.btns.in.addEventListener("click", () => stamp("in"));
   els.btns.on.addEventListener("click", () => stamp("on"));
+  if (els.btns.editOff) els.btns.editOff.addEventListener("click", () => edit("off"));
+  if (els.btns.editOut) els.btns.editOut.addEventListener("click", () => edit("out"));
+  if (els.btns.editIn) els.btns.editIn.addEventListener("click", () => edit("in"));
+  if (els.btns.editOn) els.btns.editOn.addEventListener("click", () => edit("on"));
   els.btns.reset.addEventListener("click", resetAll);
   els.btns.copy.addEventListener("click", copyAll);
 
