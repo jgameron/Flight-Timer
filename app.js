@@ -172,10 +172,9 @@
     editing[which] = true;
     const input = els[`${which}Local`];
     input.readOnly = false;
-    setTimeout(() => {
-      input.focus();
-      input.selectionStart = input.selectionEnd = input.value.length;
-    }, 0);
+    input.focus();
+    const len = input.value.length;
+    input.setSelectionRange(len, len);
   }
 
   function updateMeter(which){
