@@ -55,10 +55,27 @@
       cursor: not-allowed;
     }
     .time { flex:1; display:flex; align-items:baseline; gap:6px; width:200px; }
-    .local-input { font-weight:700; background:transparent; border:none; color:var(--ink); font-family:inherit; font-size:20px; width:120px; }
+    .local-input {
+      font-weight:700;
+      background:rgba(255,255,255,0.06);
+      border:1px solid rgba(255,255,255,0.2);
+      border-radius:6px;
+      padding:4px 6px;
+      color:var(--ink);
+      font-family:inherit;
+      font-size:20px;
+      width:120px;
+    }
     .local-input::placeholder { color: var(--muted); }
-    .local-input:focus { outline:none; }
-    .local-input:read-only { color: var(--muted); }
+    .local-input:focus {
+      outline:none;
+      border-color: var(--accent);
+      background: rgba(255,255,255,0.1);
+    }
+    .local-input:read-only {
+      color: var(--muted);
+      background: rgba(255,255,255,0.04);
+    }
     .utc { width:72px; }
     .small { font-size: 14px; }
     footer { margin: 24px 0; text-align:center; color: var(--muted); font-size: 12px; }
@@ -84,16 +101,16 @@
   <main>
     <section class="card">
       <div class="row">
-        <div class="label">Trip</div>
+        <div class="label">Trip:</div>
         <input id="trip-number" class="mono local-input" placeholder="#" inputmode="numeric" pattern="[0-9]*">
       </div>
       <div class="row">
-        <div class="label">Leg</div>
+        <div class="label">Leg:</div>
         <input id="leg-number" class="mono local-input" placeholder="#" inputmode="numeric" pattern="[0-9]*">
       </div>
       <div class="spacer"></div>
       <div class="row">
-        <button class="label" id="btn-off" type="button">OFF</button>
+        <button class="label" id="btn-off" type="button">OFF:</button>
         <div class="time">
           <input id="off-local" class="mono local-input" placeholder="HH:MM:SS" inputmode="numeric" pattern="[0-9:]*" maxlength="8" readonly>
           <span id="off-utc" class="mono small muted utc">—</span>
@@ -101,7 +118,7 @@
         <button class="btn warn" id="btn-off-reset">Reset</button>
       </div>
       <div class="row">
-        <button class="label" id="btn-out" type="button">OUT</button>
+        <button class="label" id="btn-out" type="button">OUT:</button>
         <div class="time">
           <input id="out-local" class="mono local-input" placeholder="HH:MM:SS" inputmode="numeric" pattern="[0-9:]*" maxlength="8" readonly>
           <span id="out-utc" class="mono small muted utc">—</span>
@@ -109,7 +126,7 @@
         <button class="btn warn" id="btn-out-reset">Reset</button>
       </div>
       <div class="row">
-        <button class="label" id="btn-in" type="button">IN</button>
+        <button class="label" id="btn-in" type="button">IN:</button>
         <div class="time">
           <input id="in-local" class="mono local-input" placeholder="HH:MM:SS" inputmode="numeric" pattern="[0-9:]*" maxlength="8" readonly>
           <span id="in-utc" class="mono small muted utc">—</span>
@@ -117,7 +134,7 @@
         <button class="btn warn" id="btn-in-reset">Reset</button>
       </div>
       <div class="row">
-        <button class="label" id="btn-on" type="button">ON</button>
+        <button class="label" id="btn-on" type="button">ON:</button>
         <div class="time">
           <input id="on-local" class="mono local-input" placeholder="HH:MM:SS" inputmode="numeric" pattern="[0-9:]*" maxlength="8" readonly>
           <span id="on-utc" class="mono small muted utc">—</span>
@@ -128,11 +145,11 @@
       <section class="card">
         <div class="section-title">Hobbs</div>
         <div class="row">
-          <div class="label">Start</div>
+          <div class="label">Start:</div>
           <input id="hobbs-start" class="mono local-input" placeholder="Start" inputmode="decimal" pattern="[0-9.]*">
         </div>
         <div class="row">
-          <div class="label">End</div>
+          <div class="label">End:</div>
           <input id="hobbs-end" class="mono local-input" placeholder="End" inputmode="decimal" pattern="[0-9.]*">
           <span id="hobbs-total" class="mono small muted">—</span>
         </div>
@@ -144,11 +161,11 @@
       <section class="card">
         <div class="section-title">Tach</div>
         <div class="row">
-          <div class="label">Start</div>
+          <div class="label">Start:</div>
           <input id="tach-start" class="mono local-input" placeholder="Start" inputmode="decimal" pattern="[0-9.]*">
         </div>
         <div class="row">
-          <div class="label">End</div>
+          <div class="label">End:</div>
           <input id="tach-end" class="mono local-input" placeholder="End" inputmode="decimal" pattern="[0-9.]*">
           <span id="tach-total" class="mono small muted">—</span>
         </div>
@@ -160,19 +177,19 @@
       <section class="card">
         <div class="section-title">Fuel</div>
         <div class="row">
-          <div class="label">Type</div>
+          <div class="label">Type:</div>
           <select id="fuel-type" class="mono local-input">
             <option value="100LL">100LL</option>
             <option value="JetA">Jet A</option>
           </select>
         </div>
         <div class="row">
-          <div class="label">Start</div>
+          <div class="label">Start:</div>
           <input id="fuel-start" class="mono local-input" placeholder="USG" inputmode="decimal" pattern="[0-9.]*">
           <span id="fuel-start-lbs" class="mono small muted">— lbs</span>
         </div>
         <div class="row">
-          <div class="label">End</div>
+          <div class="label">End:</div>
           <input id="fuel-end" class="mono local-input" placeholder="USG" inputmode="decimal" pattern="[0-9.]*">
           <span id="fuel-end-lbs" class="mono small muted">— lbs</span>
         </div>
