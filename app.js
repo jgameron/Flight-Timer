@@ -258,11 +258,25 @@
     render();
   }
 
-  function updateFuel(){
-    const s = parseFloat(els.fuelStart.value);
-    const e = parseFloat(els.fuelEnd.value);
-    extra.fuelStart = isNaN(s) ? null : s;
-    extra.fuelEnd = isNaN(e) ? null : e;
+  function updateFuel(which, unit){
+    const factor = els.fuelType.value === "JetA" ? 6.67 : 6.0;
+    if(which === "start"){
+      if(unit === "usg"){
+        const s = parseFloat(els.fuelStart.value);
+        extra.fuelStart = isNaN(s) ? null : s;
+      } else if(unit === "lbs"){
+        const sL = parseFloat(els.fuelStartLbs.value);
+        extra.fuelStart = isNaN(sL) ? null : sL / factor;
+      }
+    } else if(which === "end"){
+      if(unit === "usg"){
+        const e = parseFloat(els.fuelEnd.value);
+        extra.fuelEnd = isNaN(e) ? null : e;
+      } else if(unit === "lbs"){
+        const eL = parseFloat(els.fuelEndLbs.value);
+        extra.fuelEnd = isNaN(eL) ? null : eL / factor;
+      }
+    }
     extra.fuelType = els.fuelType.value;
     saveExtra();
     render();
@@ -338,13 +352,11 @@
     els.tachUsed.textContent = tachDisp;
 
     els.fuelType.value = extra.fuelType || "100LL";
-    els.fuelStart.value = extra.fuelStart ?? "";
-    els.fuelEnd.value = extra.fuelEnd ?? "";
-    const factor = extra.fuelType === "JetA" ? 6.7 : 6.0;
-    const fsLbsVal = extra.fuelStart != null ? (extra.fuelStart * factor).toFixed(1) : null;
-    els.fuelStartLbs.textContent = fsLbsVal != null ? `${fsLbsVal} lbs` : "— lbs";
-    const feLbsVal = extra.fuelEnd != null ? (extra.fuelEnd * factor).toFixed(1) : null;
-    els.fuelEndLbs.textContent = feLbsVal != null ? `${feLbsVal} lbs` : "— lbs";
+    const factor = extra.fuelType === "JetA" ? 6.67 : 6.0;
+    els.fuelStart.value = extra.fuelStart != null ? extra.fuelStart.toFixed(1) : "";
+    els.fuelStartLbs.value = extra.fuelStart != null ? (extra.fuelStart * factor).toFixed(1) : "";
+    els.fuelEnd.value = extra.fuelEnd != null ? extra.fuelEnd.toFixed(1) : "";
+    els.fuelEndLbs.value = extra.fuelEnd != null ? (extra.fuelEnd * factor).toFixed(1) : "";
     const fuelUsedVal =
       extra.fuelStart != null && extra.fuelEnd != null && extra.fuelStart >= extra.fuelEnd
         ? extra.fuelStart - extra.fuelEnd
@@ -449,7 +461,7 @@
 
     const hobbsUsed = extra.hobbsStart != null && extra.hobbsEnd != null ? (extra.hobbsEnd - extra.hobbsStart).toFixed(1) : "—";
     const tachUsed = extra.tachStart != null && extra.tachEnd != null ? (extra.tachEnd - extra.tachStart).toFixed(1) : "—";
-    const fuelFactor = extra.fuelType === "JetA" ? 6.7 : 6.0;
+    const fuelFactor = extra.fuelType === "JetA" ? 6.67 : 6.0;
     const fuelUsed = extra.fuelStart != null && extra.fuelEnd != null ? (extra.fuelStart - extra.fuelEnd).toFixed(1) : "—";
     const fuelUsedLbs = fuelUsed !== "—" ? (parseFloat(fuelUsed) * fuelFactor).toFixed(1) : "—";
     lines.push(`HOBBS USED: ${hobbsUsed}`);
@@ -511,9 +523,11 @@
     els[`${w}End`].addEventListener("change", () => updateMeter(w));
     els.btns[`${w}Reset`].addEventListener("click", () => resetMeter(w));
   });
-  els.fuelType.addEventListener("change", updateFuel);
-  els.fuelStart.addEventListener("change", updateFuel);
-  els.fuelEnd.addEventListener("change", updateFuel);
+  els.fuelType.addEventListener("change", () => updateFuel());
+  els.fuelStart.addEventListener("change", () => updateFuel("start","usg"));
+  els.fuelStartLbs.addEventListener("change", () => updateFuel("start","lbs"));
+  els.fuelEnd.addEventListener("change", () => updateFuel("end","usg"));
+  els.fuelEndLbs.addEventListener("change", () => updateFuel("end","lbs"));
   els.btns.fuelReset.addEventListener("click", resetFuel);
   els.tripNumber.addEventListener("change", updateTripLeg);
   els.legNumber.addEventListener("change", updateTripLeg);
