@@ -24,12 +24,22 @@
       out: $("#btn-out"),
       in: $("#btn-in"),
       on: $("#btn-on"),
+      offEdit: $("#btn-off-edit"),
+      outEdit: $("#btn-out-edit"),
+      inEdit: $("#btn-in-edit"),
+      onEdit: $("#btn-on-edit"),
+      offReset: $("#btn-off-reset"),
+      outReset: $("#btn-out-reset"),
+      inReset: $("#btn-in-reset"),
+      onReset: $("#btn-on-reset"),
       reset: $("#btn-reset"),
       copy: $("#btn-copy"),
       install: $("#btn-install")
     },
     installUI: $("#install-ui")
   };
+
+  const editing = { off:false, out:false, in:false, on:false };
 
   const emptyTimes = { off:null, out:null, in:null, on:null };
   const loadTimes = () => {
@@ -50,14 +60,18 @@
   };
 
   function toLocalString(d) {
-    return new Date(d).toLocaleString(undefined, {
-      year: "numeric", month: "2-digit", day: "2-digit",
-      hour: "2-digit", minute: "2-digit", second: "2-digit"
-    });
+    return new Date(d).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit", second: "2-digit", hour12: false });
   }
   function toUTCString(d) {
-    const dt = new Date(d);
-    return dt.toISOString().replace("T", " ").replace("Z", "Z (UTC)");
+    return (
+      new Date(d).toLocaleTimeString([], {
+        hour: "2-digit",
+        minute: "2-digit",
+        second: "2-digit",
+        hour12: false,
+        timeZone: "UTC"
+      }) + "Z"
+    );
   }
 
   function minutesBetween(a, b) {
@@ -82,27 +96,59 @@
     return { dec, tenths };
   }
 
+  function formatTimeInput(e){
+    let v = e.target.value.replace(/[^0-9]/g, "");
+    if (v.length > 6) v = v.slice(0,6);
+    if (v.length > 4) v = v.slice(0,2) + ":" + v.slice(2,4) + ":" + v.slice(4);
+    else if (v.length > 2) v = v.slice(0,2) + ":" + v.slice(2);
+    e.target.value = v;
+  }
+
+  function updateFromInput(which){
+    const val = els[`${which}Local`].value;
+    if(!/^\d{2}:\d{2}:\d{2}$/.test(val)) return;
+    const [h,m,s] = val.split(":").map(Number);
+    const base = times[which] ? new Date(times[which]) : new Date();
+    base.setHours(h, m, s, 0);
+    times[which] = base.toISOString();
+    saveTimes();
+    editing[which] = false;
+    render();
+  }
+
+  function resetOne(which){
+    if(!times[which]) return;
+    if(!confirm(`Reset ${which.toUpperCase()}?`)) return;
+    times[which] = null;
+    editing[which] = false;
+    saveTimes();
+    render();
+  }
+
+  function startEdit(which){
+    editing[which] = true;
+    const input = els[`${which}Local`];
+    input.disabled = false;
+    input.focus();
+    input.selectionStart = input.selectionEnd = input.value.length;
+  }
+
   function render() {
     // Stamp fields
-    if (times.off) {
-      els.offLocal.textContent = toLocalString(times.off);
-      els.offUTC.textContent = toUTCString(times.off);
-    } else { els.offLocal.textContent = "—"; els.offUTC.textContent = "—"; }
-
-    if (times.out) {
-      els.outLocal.textContent = toLocalString(times.out);
-      els.outUTC.textContent = toUTCString(times.out);
-    } else { els.outLocal.textContent = "—"; els.outUTC.textContent = "—"; }
-
-    if (times.in) {
-      els.inLocal.textContent = toLocalString(times.in);
-      els.inUTC.textContent = toUTCString(times.in);
-    } else { els.inLocal.textContent = "—"; els.inUTC.textContent = "—"; }
-
-    if (times.on) {
-      els.onLocal.textContent = toLocalString(times.on);
-      els.onUTC.textContent = toUTCString(times.on);
-    } else { els.onLocal.textContent = "—"; els.onUTC.textContent = "—"; }
+    ["off","out","in","on"].forEach((w) => {
+      if(times[w]){
+        els[`${w}Local`].value = toLocalString(times[w]);
+        els[`${w}UTC`].textContent = toUTCString(times[w]);
+        els.btns[w].disabled = true;
+        els.btns[`${w}Reset`].disabled = false;
+      } else {
+        els[`${w}Local`].value = "";
+        els[`${w}UTC`].textContent = "—";
+        els.btns[w].disabled = false;
+        els.btns[`${w}Reset`].disabled = true;
+      }
+      els[`${w}Local`].disabled = !editing[w];
+    });
 
     // Totals
     const airMins = minutesBetween(times.off, times.on);
@@ -142,8 +188,9 @@
   }
 
   function resetAll() {
-    if (!confirm("Clear all times?")) return;
+    if (!confirm("Reset all times?")) return;
     times = { off:null, out:null, in:null, on:null };
+    editing.off = editing.out = editing.in = editing.on = false;
     saveTimes();
     render();
   }
@@ -190,6 +237,17 @@
   els.btns.on.addEventListener("click", () => stamp("on"));
   els.btns.reset.addEventListener("click", resetAll);
   els.btns.copy.addEventListener("click", copyAll);
+
+  ["off","out","in","on"].forEach((w) => {
+    els[`${w}Local`].addEventListener("input", formatTimeInput);
+    els[`${w}Local`].addEventListener("change", () => updateFromInput(w));
+    els[`${w}Local`].addEventListener("blur", () => {
+      editing[w] = false;
+      els[`${w}Local`].disabled = true;
+    });
+    els.btns[`${w}Reset`].addEventListener("click", () => resetOne(w));
+    els.btns[`${w}Edit`].addEventListener("click", () => startEdit(w));
+  });
 
   // Install prompt handling
   window.addEventListener("beforeinstallprompt", (e) => {
