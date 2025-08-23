@@ -3,6 +3,7 @@
   const $ = (sel) => document.querySelector(sel);
 
   const stateKey = "ftl.v1.times";
+  const extraKey = "ftl.v1.extra";
   let deferredPrompt = null;
 
   const els = {
@@ -19,6 +20,21 @@
     blockHHMM: $("#block-hhmm"),
     blockDecimals: $("#block-decimals"),
     tz: $("#tz"),
+    hobbsStart: $("#hobbs-start"),
+    hobbsEnd: $("#hobbs-end"),
+    hobbsTotal: $("#hobbs-total"),
+    tachStart: $("#tach-start"),
+    tachEnd: $("#tach-end"),
+    tachTotal: $("#tach-total"),
+    fuelType: $("#fuel-type"),
+    fuelStart: $("#fuel-start"),
+    fuelStartLbs: $("#fuel-start-lbs"),
+    fuelEnd: $("#fuel-end"),
+    fuelEndLbs: $("#fuel-end-lbs"),
+    hobbsUsed: $("#hobbs-used"),
+    tachUsed: $("#tach-used"),
+    fuelUsedUSG: $("#fuel-used-usg"),
+    fuelUsedLbs: $("#fuel-used-lbs"),
     btns: {
       off: $("#btn-off"),
       out: $("#btn-out"),
@@ -34,7 +50,10 @@
       onReset: $("#btn-on-reset"),
       reset: $("#btn-reset"),
       copy: $("#btn-copy"),
-      install: $("#btn-install")
+      install: $("#btn-install"),
+      hobbsReset: $("#btn-hobbs-reset"),
+      tachReset: $("#btn-tach-reset"),
+      fuelReset: $("#btn-fuel-reset")
     },
     installUI: $("#install-ui")
   };
@@ -42,6 +61,15 @@
   const editing = { off:false, out:false, in:false, on:false };
 
   const emptyTimes = { off:null, out:null, in:null, on:null };
+  const emptyExtra = {
+    hobbsStart:null,
+    hobbsEnd:null,
+    tachStart:null,
+    tachEnd:null,
+    fuelType:"100LL",
+    fuelStart:null,
+    fuelEnd:null
+  };
   const loadTimes = () => {
     try {
       const raw = localStorage.getItem(stateKey);
@@ -53,10 +81,24 @@
       return { ...emptyTimes };
     }
   };
+  const loadExtra = () => {
+    try {
+      const raw = localStorage.getItem(extraKey);
+      if (!raw) return { ...emptyExtra };
+      const parsed = JSON.parse(raw);
+      return { ...emptyExtra, ...parsed };
+    } catch {
+      return { ...emptyExtra };
+    }
+  };
   let times = loadTimes();
+  let extra = loadExtra();
 
   const saveTimes = () => {
     localStorage.setItem(stateKey, JSON.stringify(times));
+  };
+  const saveExtra = () => {
+    localStorage.setItem(extraKey, JSON.stringify(extra));
   };
 
   function toLocalString(d) {
@@ -133,6 +175,41 @@
     input.selectionStart = input.selectionEnd = input.value.length;
   }
 
+  function updateMeter(which){
+    const s = parseFloat(els[`${which}Start`].value);
+    const e = parseFloat(els[`${which}End`].value);
+    extra[`${which}Start`] = isNaN(s) ? null : s;
+    extra[`${which}End`] = isNaN(e) ? null : e;
+    saveExtra();
+    render();
+  }
+
+  function resetMeter(which){
+    if(!confirm(`Reset ${which}?`)) return;
+    extra[`${which}Start`] = null;
+    extra[`${which}End`] = null;
+    saveExtra();
+    render();
+  }
+
+  function updateFuel(){
+    const s = parseFloat(els.fuelStart.value);
+    const e = parseFloat(els.fuelEnd.value);
+    extra.fuelStart = isNaN(s) ? null : s;
+    extra.fuelEnd = isNaN(e) ? null : e;
+    extra.fuelType = els.fuelType.value;
+    saveExtra();
+    render();
+  }
+
+  function resetFuel(){
+    if(!confirm("Reset fuel?")) return;
+    extra.fuelStart = null;
+    extra.fuelEnd = null;
+    saveExtra();
+    render();
+  }
+
   function render() {
     // Stamp fields
     ["off","out","in","on"].forEach((w) => {
@@ -161,6 +238,42 @@
     els.blockHHMM.textContent = fmtHHMM(blockMins);
     const bD = fmtDecimals(blockMins);
     els.blockDecimals.textContent = `Decimal: ${bD.dec} • Tenths: ${bD.tenths}`;
+
+    // Extras
+    els.hobbsStart.value = extra.hobbsStart ?? "";
+    els.hobbsEnd.value = extra.hobbsEnd ?? "";
+    const hobbsUsedVal =
+      extra.hobbsStart != null && extra.hobbsEnd != null && extra.hobbsEnd >= extra.hobbsStart
+        ? extra.hobbsEnd - extra.hobbsStart
+        : null;
+    const hobbsDisp = hobbsUsedVal != null ? hobbsUsedVal.toFixed(1) : "—";
+    els.hobbsTotal.textContent = hobbsDisp;
+    els.hobbsUsed.textContent = hobbsDisp;
+
+    els.tachStart.value = extra.tachStart ?? "";
+    els.tachEnd.value = extra.tachEnd ?? "";
+    const tachUsedVal =
+      extra.tachStart != null && extra.tachEnd != null && extra.tachEnd >= extra.tachStart
+        ? extra.tachEnd - extra.tachStart
+        : null;
+    const tachDisp = tachUsedVal != null ? tachUsedVal.toFixed(1) : "—";
+    els.tachTotal.textContent = tachDisp;
+    els.tachUsed.textContent = tachDisp;
+
+    els.fuelType.value = extra.fuelType || "100LL";
+    els.fuelStart.value = extra.fuelStart ?? "";
+    els.fuelEnd.value = extra.fuelEnd ?? "";
+    const factor = extra.fuelType === "JetA" ? 6.7 : 6.0;
+    const fsLbsVal = extra.fuelStart != null ? (extra.fuelStart * factor).toFixed(1) : null;
+    els.fuelStartLbs.textContent = fsLbsVal != null ? `${fsLbsVal} lbs` : "— lbs";
+    const feLbsVal = extra.fuelEnd != null ? (extra.fuelEnd * factor).toFixed(1) : null;
+    els.fuelEndLbs.textContent = feLbsVal != null ? `${feLbsVal} lbs` : "— lbs";
+    const fuelUsedVal =
+      extra.fuelStart != null && extra.fuelEnd != null && extra.fuelStart >= extra.fuelEnd
+        ? extra.fuelStart - extra.fuelEnd
+        : null;
+    els.fuelUsedUSG.textContent = fuelUsedVal != null ? `${fuelUsedVal.toFixed(1)} USG` : "—";
+    els.fuelUsedLbs.textContent = fuelUsedVal != null ? `${(fuelUsedVal * factor).toFixed(1)} lbs` : "—";
 
     // Timezone
     try {
@@ -215,6 +328,15 @@
     lines.push(`AIR (OFF→ON): ${fmtHHMM(airMins)} | Decimal ${aD.dec} | Tenths ${aD.tenths}`);
     lines.push(`BLOCK (OUT→IN): ${fmtHHMM(blockMins)} | Decimal ${bD.dec} | Tenths ${bD.tenths}`);
 
+    const hobbsUsed = extra.hobbsStart != null && extra.hobbsEnd != null ? (extra.hobbsEnd - extra.hobbsStart).toFixed(1) : "—";
+    const tachUsed = extra.tachStart != null && extra.tachEnd != null ? (extra.tachEnd - extra.tachStart).toFixed(1) : "—";
+    const fuelFactor = extra.fuelType === "JetA" ? 6.7 : 6.0;
+    const fuelUsed = extra.fuelStart != null && extra.fuelEnd != null ? (extra.fuelStart - extra.fuelEnd).toFixed(1) : "—";
+    const fuelUsedLbs = fuelUsed !== "—" ? (parseFloat(fuelUsed) * fuelFactor).toFixed(1) : "—";
+    lines.push(`HOBBS USED: ${hobbsUsed}`);
+    lines.push(`TACH USED: ${tachUsed}`);
+    lines.push(`FUEL USED (${extra.fuelType}): ${fuelUsed} USG | ${fuelUsedLbs} lbs`);
+
     const text = lines.join("\n");
     navigator.clipboard.writeText(text).then(() => {
       alert("Copied to clipboard!");
@@ -248,6 +370,16 @@
     els.btns[`${w}Reset`].addEventListener("click", () => resetOne(w));
     els.btns[`${w}Edit`].addEventListener("click", () => startEdit(w));
   });
+
+  ["hobbs","tach"].forEach((w) => {
+    els[`${w}Start`].addEventListener("change", () => updateMeter(w));
+    els[`${w}End`].addEventListener("change", () => updateMeter(w));
+    els.btns[`${w}Reset`].addEventListener("click", () => resetMeter(w));
+  });
+  els.fuelType.addEventListener("change", updateFuel);
+  els.fuelStart.addEventListener("change", updateFuel);
+  els.fuelEnd.addEventListener("change", updateFuel);
+  els.btns.fuelReset.addEventListener("click", resetFuel);
 
   // Install prompt handling
   window.addEventListener("beforeinstallprompt", (e) => {

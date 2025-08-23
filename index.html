@@ -22,7 +22,7 @@
     .grid { display:grid; grid-template-columns: 1fr; gap: 16px; }
     @media (min-width: 720px){ .grid { grid-template-columns: 1fr 1fr; } }
     .card { background:var(--card); border:1px solid rgba(255,255,255,0.08); border-radius: 14px; padding: 16px; }
-    .row { display:flex; align-items:center; gap:12px; flex-wrap:wrap; }
+    .row { display:flex; align-items:center; gap:12px; flex-wrap:nowrap; overflow-x:auto; }
     .row + .row { margin-top: 10px; }
     .btn { border:0; border-radius: 10px; padding: 10px 14px; font-weight: 600; cursor:pointer; }
     .btn.primary { background: var(--ok); color: #062c1f; }
@@ -108,6 +108,41 @@
         <button class="btn warn" id="btn-reset">Reset</button>
       </div>
     </section>
+    <section class="card">
+      <div class="section-title">Engine & Fuel</div>
+      <div class="row">
+        <div class="label">Hobbs</div>
+        <input id="hobbs-start" class="mono local-input" placeholder="Start" inputmode="decimal" pattern="[0-9.]*">
+        <input id="hobbs-end" class="mono local-input" placeholder="End" inputmode="decimal" pattern="[0-9.]*">
+        <span id="hobbs-total" class="mono small muted">—</span>
+        <button class="btn warn" id="btn-hobbs-reset">Reset</button>
+      </div>
+      <div class="row">
+        <div class="label">Tach</div>
+        <input id="tach-start" class="mono local-input" placeholder="Start" inputmode="decimal" pattern="[0-9.]*">
+        <input id="tach-end" class="mono local-input" placeholder="End" inputmode="decimal" pattern="[0-9.]*">
+        <span id="tach-total" class="mono small muted">—</span>
+        <button class="btn warn" id="btn-tach-reset">Reset</button>
+      </div>
+      <div class="row">
+        <div class="label">Fuel Type</div>
+        <select id="fuel-type" class="mono local-input">
+          <option value="100LL">100LL</option>
+          <option value="JetA">Jet A</option>
+        </select>
+      </div>
+      <div class="row">
+        <div class="label">Fuel Start</div>
+        <input id="fuel-start" class="mono local-input" placeholder="USG" inputmode="decimal" pattern="[0-9.]*">
+        <span id="fuel-start-lbs" class="mono small muted">— lbs</span>
+      </div>
+      <div class="row">
+        <div class="label">Fuel End</div>
+        <input id="fuel-end" class="mono local-input" placeholder="USG" inputmode="decimal" pattern="[0-9.]*">
+        <span id="fuel-end-lbs" class="mono small muted">— lbs</span>
+        <button class="btn warn" id="btn-fuel-reset">Reset</button>
+      </div>
+    </section>
 
     <section class="card">
       <div class="section-title">Totals</div>
@@ -121,6 +156,19 @@
           <div class="badge">BLOCK (OUT → IN)</div>
           <div class="kpi mono" id="block-hhmm">—</div>
           <div class="mono small muted" id="block-decimals">—</div>
+        </div>
+        <div>
+          <div class="badge">HOBBS USED</div>
+          <div class="kpi mono" id="hobbs-used">—</div>
+        </div>
+        <div>
+          <div class="badge">TACH USED</div>
+          <div class="kpi mono" id="tach-used">—</div>
+        </div>
+        <div>
+          <div class="badge">FUEL USED</div>
+          <div class="kpi mono" id="fuel-used-usg">—</div>
+          <div class="mono small muted" id="fuel-used-lbs">—</div>
         </div>
       </div>
       <div class="spacer"></div>
