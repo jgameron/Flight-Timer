@@ -79,6 +79,15 @@
   <main>
     <section class="card">
       <div class="row">
+        <div class="label">Trip</div>
+        <input id="trip-number" class="mono local-input" placeholder="#" inputmode="numeric" pattern="[0-9]*">
+      </div>
+      <div class="row">
+        <div class="label">Leg</div>
+        <input id="leg-number" class="mono local-input" placeholder="#" inputmode="numeric" pattern="[0-9]*">
+      </div>
+      <div class="spacer"></div>
+      <div class="row">
         <button class="label" id="btn-off" type="button">OFF</button>
         <div class="time">
           <input id="off-local" class="mono local-input" placeholder="HH:MM:SS" inputmode="numeric" pattern="[0-9:]*" maxlength="8" readonly>
@@ -109,11 +118,6 @@
           <span id="on-utc" class="mono small muted utc">—</span>
         </div>
         <button class="btn warn" id="btn-on-reset">Reset</button>
-      </div>
-      <div class="spacer"></div>
-      <div class="row">
-        <button class="btn muted" id="btn-copy">Copy all</button>
-        <button class="btn warn" id="btn-reset">Reset</button>
       </div>
     </section>
       <section class="card">
@@ -200,11 +204,10 @@
         </div>
       </div>
       <div class="spacer"></div>
-      <details>
-        <summary>What do these mean?</summary>
-        <p><strong>OFF</strong>: wheels up. <strong>ON</strong>: wheels down. <strong>OUT</strong>: pushback/blocks out. <strong>IN</strong>: blocks in.</p>
-        <p>Each stamp saves both your <em>local</em> time and <em>UTC</em> time to local storage for offline retrieval. Totals show HH:MM, decimal hours (e.g. 1.75), and tenths (e.g. 1.8).</p>
-      </details>
+      <div class="row">
+        <button class="btn muted" id="btn-copy">Copy all</button>
+        <button class="btn warn" id="btn-reset">Reset All</button>
+      </div>
     </section>
 
     <section class="card" id="install-card">
