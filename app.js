@@ -51,7 +51,8 @@
       tachReset: $("#btn-tach-reset"),
       fuelReset: $("#btn-fuel-reset")
     },
-    installUI: $("#install-ui")
+    installUI: $("#install-ui"),
+    installCard: $("#install-card")
   };
 
   const editing = { off:false, out:false, in:false, on:false };
@@ -392,6 +393,19 @@
       deferredPrompt = null;
     });
   }
+
+  function hideInstallCardIfInstalled(){
+    if (
+      window.matchMedia("(display-mode: standalone)").matches ||
+      window.navigator.standalone
+    ) {
+      els.installCard.style.display = "none";
+    }
+  }
+  hideInstallCardIfInstalled();
+  window.addEventListener("appinstalled", () => {
+    els.installCard.style.display = "none";
+  });
 
   // SW registration
   if ("serviceWorker" in navigator) {

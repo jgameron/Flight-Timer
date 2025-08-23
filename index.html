@@ -33,8 +33,23 @@
     .kpi { font-size: 28px; font-weight: 700; }
     .mono { font-family: ui-monospace, SFMono-Regular, Menlo, monospace; }
     .muted { color: var(--muted); }
-    .label { width: 80px; font-weight:700; cursor:pointer; background:none; border:none; color:inherit; font-size:18px; padding:0; }
-    .label:disabled { color: var(--muted); cursor:not-allowed; }
+    .label {
+      width: 80px;
+      font-weight:700;
+      cursor:pointer;
+      font-size:18px;
+      padding:6px 10px;
+      background:rgba(255,255,255,0.08);
+      border:1px solid rgba(255,255,255,0.2);
+      border-radius:8px;
+      color:inherit;
+    }
+    .label:disabled {
+      color: var(--muted);
+      cursor:not-allowed;
+      background:rgba(255,255,255,0.04);
+      border-color:rgba(255,255,255,0.1);
+    }
     .time { flex:1; display:flex; align-items:baseline; gap:6px; width:200px; }
     .local-input { font-weight:700; background:transparent; border:none; color:var(--ink); font-family:inherit; font-size:20px; width:120px; }
     .local-input::placeholder { color: var(--muted); }
@@ -192,7 +207,7 @@
       </details>
     </section>
 
-    <section class="card">
+    <section class="card" id="install-card">
       <div class="section-title">Install</div>
       <p>This is a Progressive Web App. On iPhone: Share → <em>Add to Home Screen</em>. On desktop Chrome/Edge: install from the address bar.</p>
       <div id="install-ui" class="row" style="display:none;">
