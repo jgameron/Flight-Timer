@@ -44,11 +44,15 @@
       border-radius:8px;
       color:inherit;
     }
-    .label:disabled {
+    button.label {
+      background: var(--accent);
+      color: #062c1f;
+    }
+    button.label:disabled {
+      background: rgba(255,255,255,0.04);
       color: var(--muted);
-      cursor:not-allowed;
-      background:rgba(255,255,255,0.04);
-      border-color:rgba(255,255,255,0.1);
+      border-color: rgba(255,255,255,0.1);
+      cursor: not-allowed;
     }
     .time { flex:1; display:flex; align-items:baseline; gap:6px; width:200px; }
     .local-input { font-weight:700; background:transparent; border:none; color:var(--ink); font-family:inherit; font-size:20px; width:120px; }
@@ -58,6 +62,7 @@
     .utc { width:72px; }
     .small { font-size: 14px; }
     footer { margin: 24px 0; text-align:center; color: var(--muted); font-size: 12px; }
+    #tz { background: transparent; color: var(--ink); border:1px solid rgba(255,255,255,0.2); border-radius:6px; padding:2px 4px; }
     .two-col { display:grid; grid-template-columns: 1fr 1fr; gap: 10px; }
     .badge { display:inline-block; padding:4px 8px; border-radius:999px; background:rgba(255,255,255,0.06); border:1px solid rgba(255,255,255,0.08); }
     .section-title { font-size:14px; letter-spacing:.08em; text-transform:uppercase; color:var(--muted); margin: 0 0 8px; }
@@ -219,7 +224,7 @@
     </section>
 
     <footer>
-      <div>Local timezone: <span id="tz" class="mono"></span></div>
+      <div>Timezone: <select id="tz" class="mono"></select></div>
       <div class="small muted">All data stored locally on this device.</div>
     </footer>
   </main>

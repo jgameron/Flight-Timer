@@ -4,6 +4,16 @@
 
   const stateKey = "ftl.v1.times";
   const extraKey = "ftl.v1.extra";
+  const tzKey = "ftl.v1.tz";
+  const usTimeZones = [
+    "America/New_York",
+    "America/Chicago",
+    "America/Denver",
+    "America/Phoenix",
+    "America/Los_Angeles",
+    "America/Anchorage",
+    "Pacific/Honolulu"
+  ];
   let deferredPrompt = null;
 
   const els = {
@@ -92,8 +102,27 @@
       return { ...emptyExtra };
     }
   };
+  const loadTZ = () => {
+    try {
+      const raw = localStorage.getItem(tzKey);
+      if (!raw) {
+        return { mode: "auto", tz: Intl.DateTimeFormat().resolvedOptions().timeZone };
+      }
+      const parsed = JSON.parse(raw);
+      if (parsed.mode === "manual" && parsed.tz) return parsed;
+      return { mode: "auto", tz: Intl.DateTimeFormat().resolvedOptions().timeZone };
+    } catch {
+      return { mode: "auto", tz: Intl.DateTimeFormat().resolvedOptions().timeZone };
+    }
+  };
   let times = loadTimes();
   let extra = loadExtra();
+  let tzSetting = loadTZ();
+  if (tzSetting.mode === "manual" && !usTimeZones.includes(tzSetting.tz)) {
+    tzSetting = { mode: "auto", tz: Intl.DateTimeFormat().resolvedOptions().timeZone };
+  }
+
+  initTZOptions();
 
   const saveTimes = () => {
     localStorage.setItem(stateKey, JSON.stringify(times));
@@ -101,9 +130,14 @@
   const saveExtra = () => {
     localStorage.setItem(extraKey, JSON.stringify(extra));
   };
+  const saveTZ = () => {
+    localStorage.setItem(tzKey, JSON.stringify(tzSetting));
+  };
 
   function toLocalString(d) {
-    return new Date(d).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit", second: "2-digit", hour12: false });
+    const opts = { hour: "2-digit", minute: "2-digit", second: "2-digit", hour12: false };
+    if (tzSetting.mode === "manual") opts.timeZone = tzSetting.tz;
+    return new Date(d).toLocaleTimeString([], opts);
   }
   function toUTCString(d) {
     return (
@@ -151,8 +185,35 @@
     const val = els[`${which}Local`].value;
     if(!/^\d{2}:\d{2}:\d{2}$/.test(val)) return;
     const [h,m,s] = val.split(":").map(Number);
-    const base = times[which] ? new Date(times[which]) : new Date();
-    base.setHours(h, m, s, 0);
+    let base;
+    if (tzSetting.mode === "manual") {
+      const tz = tzSetting.tz;
+      const now = times[which] ? new Date(times[which]) : new Date();
+      const tzStr = now.toLocaleString("en-US", {
+        timeZone: tz,
+        year: "numeric",
+        month: "2-digit",
+        day: "2-digit",
+        hour: "2-digit",
+        minute: "2-digit",
+        second: "2-digit"
+      });
+      const tzDate = new Date(tzStr);
+      tzDate.setHours(h, m, s, 0);
+      const utcStr = tzDate.toLocaleString("en-US", {
+        timeZone: "UTC",
+        year: "numeric",
+        month: "2-digit",
+        day: "2-digit",
+        hour: "2-digit",
+        minute: "2-digit",
+        second: "2-digit"
+      });
+      base = new Date(utcStr);
+    } else {
+      base = times[which] ? new Date(times[which]) : new Date();
+      base.setHours(h, m, s, 0);
+    }
     times[which] = base.toISOString();
     saveTimes();
     editing[which] = false;
@@ -293,20 +354,56 @@
 
     // Timezone
     try {
-      const tz = Intl.DateTimeFormat().resolvedOptions().timeZone;
-      els.tz.textContent = `${tz} (UTC${offsetHoursString(new Date())})`;
+      const deviceTZ = Intl.DateTimeFormat().resolvedOptions().timeZone;
+      const autoOpt = els.tz.querySelector('option[value="auto"]');
+      if (autoOpt) {
+        autoOpt.textContent = `Auto: ${deviceTZ} (UTC${offsetHoursStringTZ(deviceTZ)})`;
+      }
+      els.tz.value = tzSetting.mode === "manual" ? tzSetting.tz : "auto";
     } catch {
-      els.tz.textContent = "Local timezone";
+      // ignore
     }
   }
 
-  function offsetHoursString(d) {
-    const offsetMin = -d.getTimezoneOffset(); // minutes east of UTC
+  function offsetHoursStringTZ(tz) {
+    const now = new Date();
+    const tzStr = now.toLocaleString("en-US", {
+      timeZone: tz,
+      year: "numeric",
+      month: "2-digit",
+      day: "2-digit",
+      hour: "2-digit",
+      minute: "2-digit",
+      second: "2-digit"
+    });
+    const tzDate = new Date(tzStr);
+    const offsetMin = Math.round((tzDate - now) / 60000 + now.getTimezoneOffset());
     const sign = offsetMin >= 0 ? "+" : "-";
     const abs = Math.abs(offsetMin);
-    const h = String(Math.floor(abs/60)).padStart(2,"0");
-    const m = String(abs%60).padStart(2,"0");
+    const h = String(Math.floor(abs / 60)).padStart(2, "0");
+    const m = String(abs % 60).padStart(2, "0");
     return `${sign}${h}:${m}`;
+  }
+
+  function initTZOptions() {
+    try {
+      const deviceTZ = Intl.DateTimeFormat().resolvedOptions().timeZone;
+      const frag = document.createDocumentFragment();
+      const autoOpt = document.createElement("option");
+      autoOpt.value = "auto";
+      autoOpt.textContent = `Auto: ${deviceTZ} (UTC${offsetHoursStringTZ(deviceTZ)})`;
+      frag.appendChild(autoOpt);
+      usTimeZones.forEach((tz) => {
+        const opt = document.createElement("option");
+        opt.value = tz;
+        opt.textContent = `${tz} (UTC${offsetHoursStringTZ(tz)})`;
+        frag.appendChild(opt);
+      });
+      els.tz.appendChild(frag);
+      els.tz.value = tzSetting.mode === "manual" ? tzSetting.tz : "auto";
+    } catch {
+      // ignore
+    }
   }
 
   function stamp(which) {
@@ -374,6 +471,19 @@
     });
   }
 
+  function handleTZChange() {
+    const val = els.tz.value;
+    if (val === "auto") {
+      tzSetting.mode = "auto";
+      tzSetting.tz = Intl.DateTimeFormat().resolvedOptions().timeZone;
+    } else {
+      tzSetting.mode = "manual";
+      tzSetting.tz = val;
+    }
+    saveTZ();
+    render();
+  }
+
   // Wire up UI
   els.btns.off.addEventListener("click", () => stamp("off"));
   els.btns.out.addEventListener("click", () => stamp("out"));
@@ -407,6 +517,7 @@
   els.btns.fuelReset.addEventListener("click", resetFuel);
   els.tripNumber.addEventListener("change", updateTripLeg);
   els.legNumber.addEventListener("change", updateTripLeg);
+  els.tz.addEventListener("change", handleTZChange);
 
   // Install prompt handling
   window.addEventListener("beforeinstallprompt", (e) => {
