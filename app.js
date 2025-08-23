@@ -40,10 +40,6 @@
       out: $("#btn-out"),
       in: $("#btn-in"),
       on: $("#btn-on"),
-      offEdit: $("#btn-off-edit"),
-      outEdit: $("#btn-out-edit"),
-      inEdit: $("#btn-in-edit"),
-      onEdit: $("#btn-on-edit"),
       offReset: $("#btn-off-reset"),
       outReset: $("#btn-out-reset"),
       inReset: $("#btn-in-reset"),
@@ -55,7 +51,8 @@
       tachReset: $("#btn-tach-reset"),
       fuelReset: $("#btn-fuel-reset")
     },
-    installUI: $("#install-ui")
+    installUI: $("#install-ui"),
+    installCard: $("#install-card")
   };
 
   const editing = { off:false, out:false, in:false, on:false };
@@ -170,7 +167,7 @@
   function startEdit(which){
     editing[which] = true;
     const input = els[`${which}Local`];
-    input.disabled = false;
+    input.readOnly = false;
     input.focus();
     input.selectionStart = input.selectionEnd = input.value.length;
   }
@@ -224,7 +221,7 @@
         els.btns[w].disabled = false;
         els.btns[`${w}Reset`].disabled = true;
       }
-      els[`${w}Local`].disabled = !editing[w];
+      els[`${w}Local`].readOnly = !editing[w];
     });
 
     // Totals
@@ -365,10 +362,10 @@
     els[`${w}Local`].addEventListener("change", () => updateFromInput(w));
     els[`${w}Local`].addEventListener("blur", () => {
       editing[w] = false;
-      els[`${w}Local`].disabled = true;
+      els[`${w}Local`].readOnly = true;
     });
+    els[`${w}Local`].addEventListener("click", () => startEdit(w));
     els.btns[`${w}Reset`].addEventListener("click", () => resetOne(w));
-    els.btns[`${w}Edit`].addEventListener("click", () => startEdit(w));
   });
 
   ["hobbs","tach"].forEach((w) => {
@@ -396,6 +393,19 @@
       deferredPrompt = null;
     });
   }
+
+  function hideInstallCardIfInstalled(){
+    if (
+      window.matchMedia("(display-mode: standalone)").matches ||
+      window.navigator.standalone
+    ) {
+      els.installCard.style.display = "none";
+    }
+  }
+  hideInstallCardIfInstalled();
+  window.addEventListener("appinstalled", () => {
+    els.installCard.style.display = "none";
+  });
 
   // SW registration
   if ("serviceWorker" in navigator) {
