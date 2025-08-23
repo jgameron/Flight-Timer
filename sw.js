@@ -1,5 +1,5 @@
 // Basic offline cache with stale-while-revalidate
-const CACHE = "ftl-cache-v2";
+const CACHE = "ftl-cache-v3";
 const ASSETS = [
   "./",
   "./index.html",
