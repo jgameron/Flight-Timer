@@ -40,10 +40,6 @@
       out: $("#btn-out"),
       in: $("#btn-in"),
       on: $("#btn-on"),
-      offEdit: $("#btn-off-edit"),
-      outEdit: $("#btn-out-edit"),
-      inEdit: $("#btn-in-edit"),
-      onEdit: $("#btn-on-edit"),
       offReset: $("#btn-off-reset"),
       outReset: $("#btn-out-reset"),
       inReset: $("#btn-in-reset"),
@@ -170,7 +166,7 @@
   function startEdit(which){
     editing[which] = true;
     const input = els[`${which}Local`];
-    input.disabled = false;
+    input.readOnly = false;
     input.focus();
     input.selectionStart = input.selectionEnd = input.value.length;
   }
@@ -224,7 +220,7 @@
         els.btns[w].disabled = false;
         els.btns[`${w}Reset`].disabled = true;
       }
-      els[`${w}Local`].disabled = !editing[w];
+      els[`${w}Local`].readOnly = !editing[w];
     });
 
     // Totals
@@ -365,10 +361,10 @@
     els[`${w}Local`].addEventListener("change", () => updateFromInput(w));
     els[`${w}Local`].addEventListener("blur", () => {
       editing[w] = false;
-      els[`${w}Local`].disabled = true;
+      els[`${w}Local`].readOnly = true;
     });
+    els[`${w}Local`].addEventListener("click", () => startEdit(w));
     els.btns[`${w}Reset`].addEventListener("click", () => resetOne(w));
-    els.btns[`${w}Edit`].addEventListener("click", () => startEdit(w));
   });
 
   ["hobbs","tach"].forEach((w) => {
