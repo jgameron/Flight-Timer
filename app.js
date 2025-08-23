@@ -5,6 +5,15 @@
   const stateKey = "ftl.v1.times";
   const extraKey = "ftl.v1.extra";
   const tzKey = "ftl.v1.tz";
+  const usTimeZones = [
+    "America/New_York",
+    "America/Chicago",
+    "America/Denver",
+    "America/Phoenix",
+    "America/Los_Angeles",
+    "America/Anchorage",
+    "Pacific/Honolulu"
+  ];
   let deferredPrompt = null;
 
   const els = {
@@ -109,6 +118,9 @@
   let times = loadTimes();
   let extra = loadExtra();
   let tzSetting = loadTZ();
+  if (tzSetting.mode === "manual" && !usTimeZones.includes(tzSetting.tz)) {
+    tzSetting = { mode: "auto", tz: Intl.DateTimeFormat().resolvedOptions().timeZone };
+  }
 
   initTZOptions();
 
@@ -347,12 +359,6 @@
       if (autoOpt) {
         autoOpt.textContent = `Auto: ${deviceTZ} (UTC${offsetHoursStringTZ(deviceTZ)})`;
       }
-      if (!els.tz.querySelector(`option[value="${tzSetting.tz}"]`)) {
-        const opt = document.createElement("option");
-        opt.value = tzSetting.tz;
-        opt.textContent = `${tzSetting.tz} (UTC${offsetHoursStringTZ(tzSetting.tz)})`;
-        els.tz.appendChild(opt);
-      }
       els.tz.value = tzSetting.mode === "manual" ? tzSetting.tz : "auto";
     } catch {
       // ignore
@@ -382,15 +388,12 @@
   function initTZOptions() {
     try {
       const deviceTZ = Intl.DateTimeFormat().resolvedOptions().timeZone;
-      const list = typeof Intl.supportedValuesOf === "function" ? Intl.supportedValuesOf("timeZone") : [];
-      const zones = new Set(list);
-      zones.add(tzSetting.tz);
       const frag = document.createDocumentFragment();
       const autoOpt = document.createElement("option");
       autoOpt.value = "auto";
       autoOpt.textContent = `Auto: ${deviceTZ} (UTC${offsetHoursStringTZ(deviceTZ)})`;
       frag.appendChild(autoOpt);
-      Array.from(zones).sort().forEach((tz) => {
+      usTimeZones.forEach((tz) => {
         const opt = document.createElement("option");
         opt.value = tz;
         opt.textContent = `${tz} (UTC${offsetHoursStringTZ(tz)})`;
