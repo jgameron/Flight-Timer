@@ -32,7 +32,7 @@ All data persists to **localStorage** and the app works **offline** via a servic
 - `app.js` — Logic: stamping times, formatting, localStorage, install prompt, SW register
 - `sw.js` — Offline cache (stale-while-revalidate)
 - `manifest.webmanifest` — PWA metadata
-- `assets/icon-192.png`, `assets/icon-512.png` — PWA icons
+- `assets/logo.svg` — PWA icon and app header logo
 
 ## Notes
 

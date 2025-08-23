@@ -1,12 +1,11 @@
 // Basic offline cache with stale-while-revalidate
-const CACHE = "ftl-cache-v1";
+const CACHE = "ftl-cache-v2";
 const ASSETS = [
   "./",
   "./index.html",
   "./app.js",
   "./manifest.webmanifest",
-  "./assets/icon-192.png",
-  "./assets/icon-512.png"
+  "./assets/logo.svg"
 ];
 
 self.addEventListener("install", (event) => {
