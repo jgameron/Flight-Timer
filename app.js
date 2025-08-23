@@ -110,6 +110,8 @@
   let extra = loadExtra();
   let tzSetting = loadTZ();
 
+  initTZOptions();
+
   const saveTimes = () => {
     localStorage.setItem(stateKey, JSON.stringify(times));
   };
@@ -341,12 +343,19 @@
     // Timezone
     try {
       const deviceTZ = Intl.DateTimeFormat().resolvedOptions().timeZone;
-      const currentTZ = tzSetting.mode === "manual" ? tzSetting.tz : deviceTZ;
-      const offset = offsetHoursStringTZ(currentTZ);
-      const modeLabel = tzSetting.mode === "manual" ? "Manual" : "Auto";
-      els.tz.textContent = `${modeLabel}: ${currentTZ} (UTC${offset})`;
+      const autoOpt = els.tz.querySelector('option[value="auto"]');
+      if (autoOpt) {
+        autoOpt.textContent = `Auto: ${deviceTZ} (UTC${offsetHoursStringTZ(deviceTZ)})`;
+      }
+      if (!els.tz.querySelector(`option[value="${tzSetting.tz}"]`)) {
+        const opt = document.createElement("option");
+        opt.value = tzSetting.tz;
+        opt.textContent = `${tzSetting.tz} (UTC${offsetHoursStringTZ(tzSetting.tz)})`;
+        els.tz.appendChild(opt);
+      }
+      els.tz.value = tzSetting.mode === "manual" ? tzSetting.tz : "auto";
     } catch {
-      els.tz.textContent = "Timezone";
+      // ignore
     }
   }
 
@@ -368,6 +377,30 @@
     const h = String(Math.floor(abs / 60)).padStart(2, "0");
     const m = String(abs % 60).padStart(2, "0");
     return `${sign}${h}:${m}`;
+  }
+
+  function initTZOptions() {
+    try {
+      const deviceTZ = Intl.DateTimeFormat().resolvedOptions().timeZone;
+      const list = typeof Intl.supportedValuesOf === "function" ? Intl.supportedValuesOf("timeZone") : [];
+      const zones = new Set(list);
+      zones.add(tzSetting.tz);
+      const frag = document.createDocumentFragment();
+      const autoOpt = document.createElement("option");
+      autoOpt.value = "auto";
+      autoOpt.textContent = `Auto: ${deviceTZ} (UTC${offsetHoursStringTZ(deviceTZ)})`;
+      frag.appendChild(autoOpt);
+      Array.from(zones).sort().forEach((tz) => {
+        const opt = document.createElement("option");
+        opt.value = tz;
+        opt.textContent = `${tz} (UTC${offsetHoursStringTZ(tz)})`;
+        frag.appendChild(opt);
+      });
+      els.tz.appendChild(frag);
+      els.tz.value = tzSetting.mode === "manual" ? tzSetting.tz : "auto";
+    } catch {
+      // ignore
+    }
   }
 
   function stamp(which) {
@@ -435,26 +468,14 @@
     });
   }
 
-  function changeTimezone() {
-    const current = tzSetting.mode === "manual" ? tzSetting.tz : "auto";
-    const input = prompt(
-      "Enter timezone (e.g. America/New_York) or 'auto'",
-      current
-    );
-    if (input === null) return;
-    const val = input.trim();
-    if (!val || val.toLowerCase() === "auto") {
+  function handleTZChange() {
+    const val = els.tz.value;
+    if (val === "auto") {
       tzSetting.mode = "auto";
       tzSetting.tz = Intl.DateTimeFormat().resolvedOptions().timeZone;
     } else {
-      try {
-        Intl.DateTimeFormat([], { timeZone: val });
-        tzSetting.mode = "manual";
-        tzSetting.tz = val;
-      } catch {
-        alert("Invalid timezone");
-        return;
-      }
+      tzSetting.mode = "manual";
+      tzSetting.tz = val;
     }
     saveTZ();
     render();
@@ -493,7 +514,7 @@
   els.btns.fuelReset.addEventListener("click", resetFuel);
   els.tripNumber.addEventListener("change", updateTripLeg);
   els.legNumber.addEventListener("change", updateTripLeg);
-  els.tz.addEventListener("click", changeTimezone);
+  els.tz.addEventListener("change", handleTZChange);
 
   // Install prompt handling
   window.addEventListener("beforeinstallprompt", (e) => {
