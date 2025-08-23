@@ -34,11 +34,12 @@
     .mono { font-family: ui-monospace, SFMono-Regular, Menlo, monospace; }
     .muted { color: var(--muted); }
     .label { width: 70px; font-weight:700; }
-    .time { flex:1; display:flex; align-items:baseline; gap:6px; }
-    .local-input { font-weight:700; background:transparent; border:none; color:var(--ink); font-family:inherit; font-size:16px; width:72px; }
+    .time { flex:1; display:flex; align-items:baseline; gap:6px; width:160px; }
+    .local-input { font-weight:700; background:transparent; border:none; color:var(--ink); font-family:inherit; font-size:16px; width:88px; }
     .local-input::placeholder { color: var(--muted); }
     .local-input:focus { outline:none; }
     .local-input:disabled { color: var(--muted); }
+    .utc { width:72px; }
     .small { font-size: 12px; }
     footer { margin: 24px 0; text-align:center; color: var(--muted); font-size: 12px; }
     .two-col { display:grid; grid-template-columns: 1fr 1fr; gap: 10px; }
@@ -64,37 +65,41 @@
       <div class="row">
         <div class="label">OFF</div>
         <div class="time">
-          <input id="off-local" class="mono local-input" placeholder="HH:MM" inputmode="numeric" pattern="[0-9:]*" maxlength="5">
-          <span id="off-utc" class="mono small muted">—</span>
+          <input id="off-local" class="mono local-input" placeholder="HH:MM:SS" inputmode="numeric" pattern="[0-9:]*" maxlength="8" disabled>
+          <span id="off-utc" class="mono small muted utc">—</span>
         </div>
         <button class="btn primary" id="btn-off">Stamp OFF</button>
+        <button class="btn muted" id="btn-off-edit">Edit</button>
         <button class="btn warn" id="btn-off-reset">Reset</button>
       </div>
       <div class="row">
         <div class="label">OUT</div>
         <div class="time">
-          <input id="out-local" class="mono local-input" placeholder="HH:MM" inputmode="numeric" pattern="[0-9:]*" maxlength="5">
-          <span id="out-utc" class="mono small muted">—</span>
+          <input id="out-local" class="mono local-input" placeholder="HH:MM:SS" inputmode="numeric" pattern="[0-9:]*" maxlength="8" disabled>
+          <span id="out-utc" class="mono small muted utc">—</span>
         </div>
         <button class="btn primary" id="btn-out">Stamp OUT</button>
+        <button class="btn muted" id="btn-out-edit">Edit</button>
         <button class="btn warn" id="btn-out-reset">Reset</button>
       </div>
       <div class="row">
         <div class="label">IN</div>
         <div class="time">
-          <input id="in-local" class="mono local-input" placeholder="HH:MM" inputmode="numeric" pattern="[0-9:]*" maxlength="5">
-          <span id="in-utc" class="mono small muted">—</span>
+          <input id="in-local" class="mono local-input" placeholder="HH:MM:SS" inputmode="numeric" pattern="[0-9:]*" maxlength="8" disabled>
+          <span id="in-utc" class="mono small muted utc">—</span>
         </div>
         <button class="btn primary" id="btn-in">Stamp IN</button>
+        <button class="btn muted" id="btn-in-edit">Edit</button>
         <button class="btn warn" id="btn-in-reset">Reset</button>
       </div>
       <div class="row">
         <div class="label">ON</div>
         <div class="time">
-          <input id="on-local" class="mono local-input" placeholder="HH:MM" inputmode="numeric" pattern="[0-9:]*" maxlength="5">
-          <span id="on-utc" class="mono small muted">—</span>
+          <input id="on-local" class="mono local-input" placeholder="HH:MM:SS" inputmode="numeric" pattern="[0-9:]*" maxlength="8" disabled>
+          <span id="on-utc" class="mono small muted utc">—</span>
         </div>
         <button class="btn primary" id="btn-on">Stamp ON</button>
+        <button class="btn muted" id="btn-on-edit">Edit</button>
         <button class="btn warn" id="btn-on-reset">Reset</button>
       </div>
       <div class="spacer"></div>

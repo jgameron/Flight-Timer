@@ -24,6 +24,10 @@
       out: $("#btn-out"),
       in: $("#btn-in"),
       on: $("#btn-on"),
+      offEdit: $("#btn-off-edit"),
+      outEdit: $("#btn-out-edit"),
+      inEdit: $("#btn-in-edit"),
+      onEdit: $("#btn-on-edit"),
       offReset: $("#btn-off-reset"),
       outReset: $("#btn-out-reset"),
       inReset: $("#btn-in-reset"),
@@ -34,6 +38,8 @@
     },
     installUI: $("#install-ui")
   };
+
+  const editing = { off:false, out:false, in:false, on:false };
 
   const emptyTimes = { off:null, out:null, in:null, on:null };
   const loadTimes = () => {
@@ -54,10 +60,18 @@
   };
 
   function toLocalString(d) {
-    return new Date(d).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit", hour12: false });
+    return new Date(d).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit", second: "2-digit", hour12: false });
   }
   function toUTCString(d) {
-    return new Date(d).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit", hour12: false, timeZone: "UTC" }) + "Z";
+    return (
+      new Date(d).toLocaleTimeString([], {
+        hour: "2-digit",
+        minute: "2-digit",
+        second: "2-digit",
+        hour12: false,
+        timeZone: "UTC"
+      }) + "Z"
+    );
   }
 
   function minutesBetween(a, b) {
@@ -84,19 +98,21 @@
 
   function formatTimeInput(e){
     let v = e.target.value.replace(/[^0-9]/g, "");
-    if (v.length > 4) v = v.slice(0,4);
-    if (v.length > 2) v = v.slice(0,2) + ":" + v.slice(2);
+    if (v.length > 6) v = v.slice(0,6);
+    if (v.length > 4) v = v.slice(0,2) + ":" + v.slice(2,4) + ":" + v.slice(4);
+    else if (v.length > 2) v = v.slice(0,2) + ":" + v.slice(2);
     e.target.value = v;
   }
 
   function updateFromInput(which){
     const val = els[`${which}Local`].value;
-    if(!/^\d{2}:\d{2}$/.test(val)) return;
-    const [h,m] = val.split(":").map(Number);
+    if(!/^\d{2}:\d{2}:\d{2}$/.test(val)) return;
+    const [h,m,s] = val.split(":").map(Number);
     const base = times[which] ? new Date(times[which]) : new Date();
-    base.setHours(h, m, 0, 0);
+    base.setHours(h, m, s, 0);
     times[which] = base.toISOString();
     saveTimes();
+    editing[which] = false;
     render();
   }
 
@@ -104,8 +120,17 @@
     if(!times[which]) return;
     if(!confirm(`Reset ${which.toUpperCase()}?`)) return;
     times[which] = null;
+    editing[which] = false;
     saveTimes();
     render();
+  }
+
+  function startEdit(which){
+    editing[which] = true;
+    const input = els[`${which}Local`];
+    input.disabled = false;
+    input.focus();
+    input.selectionStart = input.selectionEnd = input.value.length;
   }
 
   function render() {
@@ -122,6 +147,7 @@
         els.btns[w].disabled = false;
         els.btns[`${w}Reset`].disabled = true;
       }
+      els[`${w}Local`].disabled = !editing[w];
     });
 
     // Totals
@@ -164,6 +190,7 @@
   function resetAll() {
     if (!confirm("Reset all times?")) return;
     times = { off:null, out:null, in:null, on:null };
+    editing.off = editing.out = editing.in = editing.on = false;
     saveTimes();
     render();
   }
@@ -214,7 +241,12 @@
   ["off","out","in","on"].forEach((w) => {
     els[`${w}Local`].addEventListener("input", formatTimeInput);
     els[`${w}Local`].addEventListener("change", () => updateFromInput(w));
+    els[`${w}Local`].addEventListener("blur", () => {
+      editing[w] = false;
+      els[`${w}Local`].disabled = true;
+    });
     els.btns[`${w}Reset`].addEventListener("click", () => resetOne(w));
+    els.btns[`${w}Edit`].addEventListener("click", () => startEdit(w));
   });
 
   // Install prompt handling
