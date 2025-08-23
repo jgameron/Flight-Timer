@@ -1,0 +1,136 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Flight Times Logger (OFF/OUT/IN/ON)</title>
+  <meta name="description" content="PWA to log OFF/OUT/IN/ON timestamps with local & UTC times and compute BLOCK & AIR totals.">
+  <link rel="manifest" href="manifest.webmanifest">
+  <link rel="icon" href="assets/icon-192.png" sizes="192x192">
+  <meta name="theme-color" content="#0a285a">
+  <style>
+    :root {
+      --bg:#0a285a; --card:#0f3460; --ink:#e9eef7; --muted:#b9c6db; --accent:#36d399;
+      --warn:#f59e0b; --danger:#ef4444; --ok:#10b981;
+    }
+    * { box-sizing: border-box; }
+    html, body { margin:0; padding:0; background:var(--bg); color:var(--ink); font-family: system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, sans-serif; }
+    header { padding: 16px; display:flex; align-items:center; gap:12px; background:rgba(255,255,255,0.03); border-bottom: 1px solid rgba(255,255,255,0.08); position:sticky; top:0; backdrop-filter:saturate(120%) blur(6px); }
+    header img { width:40px; height:40px; border-radius:8px; }
+    header h1 { font-size: 18px; margin:0; }
+    main { padding: 20px; max-width: 900px; margin: 0 auto; }
+    .grid { display:grid; grid-template-columns: 1fr; gap: 16px; }
+    @media (min-width: 720px){ .grid { grid-template-columns: 1fr 1fr; } }
+    .card { background:var(--card); border:1px solid rgba(255,255,255,0.08); border-radius: 14px; padding: 16px; }
+    .row { display:flex; align-items:center; gap:12px; flex-wrap:wrap; }
+    .row + .row { margin-top: 10px; }
+    .btn { border:0; border-radius: 10px; padding: 10px 14px; font-weight: 600; cursor:pointer; }
+    .btn.primary { background: var(--ok); color: #062c1f; }
+    .btn.warn { background: var(--warn); color: #251a02; }
+    .btn.muted { background: rgba(255,255,255,0.08); color: var(--ink); }
+    .btn.block { width: 100%; }
+    .kpi { font-size: 28px; font-weight: 700; }
+    .mono { font-family: ui-monospace, SFMono-Regular, Menlo, monospace; }
+    .muted { color: var(--muted); }
+    .label { width: 70px; font-weight:700; }
+    .time { flex:1; }
+    .small { font-size: 12px; }
+    footer { margin: 24px 0; text-align:center; color: var(--muted); font-size: 12px; }
+    .two-col { display:grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+    .badge { display:inline-block; padding:4px 8px; border-radius:999px; background:rgba(255,255,255,0.06); border:1px solid rgba(255,255,255,0.08); }
+    .section-title { font-size:14px; letter-spacing:.08em; text-transform:uppercase; color:var(--muted); margin: 0 0 8px; }
+    details { background: rgba(255,255,255,0.04); border-radius: 10px; padding: 10px 12px; }
+    summary { cursor: pointer; }
+    a { color: var(--accent); }
+    .spacer { height:8px; }
+  </style>
+</head>
+<body>
+  <header>
+    <img src="assets/icon-192.png" alt="app icon">
+    <div>
+      <h1>Flight Times Logger</h1>
+      <div class="small muted">OFF / OUT / IN / ON • local &amp; UTC • offline ready</div>
+    </div>
+  </header>
+
+  <main>
+    <section class="card">
+      <div class="row">
+        <div class="label">OFF</div>
+        <div class="time">
+          <div id="off-local" class="mono">—</div>
+          <div id="off-utc" class="mono small muted">—</div>
+        </div>
+        <button class="btn primary" id="btn-off">Stamp OFF</button>
+      </div>
+      <div class="row">
+        <div class="label">OUT</div>
+        <div class="time">
+          <div id="out-local" class="mono">—</div>
+          <div id="out-utc" class="mono small muted">—</div>
+        </div>
+        <button class="btn primary" id="btn-out">Stamp OUT</button>
+      </div>
+      <div class="row">
+        <div class="label">IN</div>
+        <div class="time">
+          <div id="in-local" class="mono">—</div>
+          <div id="in-utc" class="mono small muted">—</div>
+        </div>
+        <button class="btn primary" id="btn-in">Stamp IN</button>
+      </div>
+      <div class="row">
+        <div class="label">ON</div>
+        <div class="time">
+          <div id="on-local" class="mono">—</div>
+          <div id="on-utc" class="mono small muted">—</div>
+        </div>
+        <button class="btn primary" id="btn-on">Stamp ON</button>
+      </div>
+      <div class="spacer"></div>
+      <div class="row">
+        <button class="btn muted" id="btn-copy">Copy all</button>
+        <button class="btn warn" id="btn-reset">Reset</button>
+      </div>
+    </section>
+
+    <section class="card">
+      <div class="section-title">Totals</div>
+      <div class="grid">
+        <div>
+          <div class="badge">AIR (OFF → ON)</div>
+          <div class="kpi mono" id="air-hhmm">—</div>
+          <div class="mono small muted" id="air-decimals">—</div>
+        </div>
+        <div>
+          <div class="badge">BLOCK (OUT → IN)</div>
+          <div class="kpi mono" id="block-hhmm">—</div>
+          <div class="mono small muted" id="block-decimals">—</div>
+        </div>
+      </div>
+      <div class="spacer"></div>
+      <details>
+        <summary>What do these mean?</summary>
+        <p><strong>OFF</strong>: wheels up. <strong>ON</strong>: wheels down. <strong>OUT</strong>: pushback/blocks out. <strong>IN</strong>: blocks in.</p>
+        <p>Each stamp saves both your <em>local</em> time and <em>UTC</em> time to local storage for offline retrieval. Totals show HH:MM, decimal hours (e.g. 1.75), and tenths (e.g. 1.8).</p>
+      </details>
+    </section>
+
+    <section class="card">
+      <div class="section-title">Install</div>
+      <p>This is a Progressive Web App. On iPhone: Share → <em>Add to Home Screen</em>. On desktop Chrome/Edge: install from the address bar.</p>
+      <div id="install-ui" class="row" style="display:none;">
+        <button class="btn primary" id="btn-install">Install App</button>
+      </div>
+    </section>
+
+    <footer>
+      <div>Local timezone: <span id="tz" class="mono"></span></div>
+      <div class="small muted">All data stored locally on this device.</div>
+    </footer>
+  </main>
+
+  <script src="app.js"></script>
+</body>
+</html>
