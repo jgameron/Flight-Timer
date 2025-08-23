@@ -20,6 +20,8 @@
     blockHHMM: $("#block-hhmm"),
     blockDecimals: $("#block-decimals"),
     tz: $("#tz"),
+    tripNumber: $("#trip-number"),
+    legNumber: $("#leg-number"),
     hobbsStart: $("#hobbs-start"),
     hobbsEnd: $("#hobbs-end"),
     hobbsTotal: $("#hobbs-total"),
@@ -59,6 +61,8 @@
 
   const emptyTimes = { off:null, out:null, in:null, on:null };
   const emptyExtra = {
+    tripNumber:null,
+    legNumber:null,
     hobbsStart:null,
     hobbsEnd:null,
     tachStart:null,
@@ -165,11 +169,15 @@
   }
 
   function startEdit(which){
+    if (editing[which]) return;
     editing[which] = true;
     const input = els[`${which}Local`];
     input.readOnly = false;
-    input.focus();
-    input.selectionStart = input.selectionEnd = input.value.length;
+    const len = input.value.length;
+    setTimeout(() => {
+      input.focus();
+      input.setSelectionRange(len, len);
+    }, 0);
   }
 
   function updateMeter(which){
@@ -207,6 +215,15 @@
     render();
   }
 
+  function updateTripLeg(){
+    const t = parseInt(els.tripNumber.value);
+    const l = parseInt(els.legNumber.value);
+    extra.tripNumber = isNaN(t) ? null : t;
+    extra.legNumber = isNaN(l) ? null : l;
+    saveExtra();
+    render();
+  }
+
   function render() {
     // Stamp fields
     ["off","out","in","on"].forEach((w) => {
@@ -237,6 +254,8 @@
     els.blockDecimals.textContent = `Decimal: ${bD.dec} • Tenths: ${bD.tenths}`;
 
     // Extras
+    els.tripNumber.value = extra.tripNumber ?? "";
+    els.legNumber.value = extra.legNumber ?? "";
     els.hobbsStart.value = extra.hobbsStart ?? "";
     els.hobbsEnd.value = extra.hobbsEnd ?? "";
     const hobbsUsedVal =
@@ -298,15 +317,21 @@
   }
 
   function resetAll() {
-    if (!confirm("Reset all times?")) return;
-    times = { off:null, out:null, in:null, on:null };
+    if (!confirm("Reset all data?")) return;
+    times = { ...emptyTimes };
+    extra = { ...emptyExtra };
     editing.off = editing.out = editing.in = editing.on = false;
     saveTimes();
+    saveExtra();
     render();
   }
 
   function copyAll() {
     const lines = [];
+    if (extra.tripNumber != null || extra.legNumber != null) {
+      lines.push(`Trip: ${extra.tripNumber ?? '—'} | Leg: ${extra.legNumber ?? '—'}`);
+      lines.push("");
+    }
     const push = (label, val) => {
       if (!val) { lines.push(`${label}: —`); return; }
       lines.push(`${label}: ${toLocalString(val)} | ${toUTCString(val)}`);
@@ -358,13 +383,16 @@
   els.btns.copy.addEventListener("click", copyAll);
 
   ["off","out","in","on"].forEach((w) => {
-    els[`${w}Local`].addEventListener("input", formatTimeInput);
-    els[`${w}Local`].addEventListener("change", () => updateFromInput(w));
-    els[`${w}Local`].addEventListener("blur", () => {
+    const input = els[`${w}Local`];
+    input.addEventListener("input", formatTimeInput);
+    input.addEventListener("change", () => updateFromInput(w));
+    input.addEventListener("blur", () => {
       editing[w] = false;
-      els[`${w}Local`].readOnly = true;
+      input.readOnly = true;
     });
-    els[`${w}Local`].addEventListener("click", () => startEdit(w));
+    const activate = () => startEdit(w);
+    input.addEventListener("touchstart", activate);
+    input.addEventListener("mousedown", activate);
     els.btns[`${w}Reset`].addEventListener("click", () => resetOne(w));
   });
 
@@ -377,6 +405,8 @@
   els.fuelStart.addEventListener("change", updateFuel);
   els.fuelEnd.addEventListener("change", updateFuel);
   els.btns.fuelReset.addEventListener("click", resetFuel);
+  els.tripNumber.addEventListener("change", updateTripLeg);
+  els.legNumber.addEventListener("change", updateTripLeg);
 
   // Install prompt handling
   window.addEventListener("beforeinstallprompt", (e) => {
