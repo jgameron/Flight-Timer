@@ -67,7 +67,6 @@
     installCard: $("#install-card")
   };
 
-  const editing = { off:false, out:false, in:false, on:false };
 
   const emptyTimes = { off:null, out:null, in:null, on:null };
   const emptyExtra = {
@@ -216,7 +215,6 @@
     }
     times[which] = base.toISOString();
     saveTimes();
-    editing[which] = false;
     render();
   }
 
@@ -224,21 +222,8 @@
     if(!times[which]) return;
     if(!confirm(`Reset ${which.toUpperCase()}?`)) return;
     times[which] = null;
-    editing[which] = false;
     saveTimes();
     render();
-  }
-
-  function startEdit(which){
-    if (editing[which]) return;
-    editing[which] = true;
-    const input = els[`${which}Local`];
-    input.readOnly = false;
-    const len = input.value.length;
-    setTimeout(() => {
-      input.focus();
-      input.setSelectionRange(len, len);
-    }, 0);
   }
 
   function updateMeter(which){
@@ -313,7 +298,6 @@
         els.btns[w].disabled = false;
         els.btns[`${w}Reset`].disabled = true;
       }
-      els[`${w}Local`].readOnly = !editing[w];
     });
 
     // Totals
@@ -429,7 +413,6 @@
     if (!confirm("Reset all data?")) return;
     times = { ...emptyTimes };
     extra = { ...emptyExtra };
-    editing.off = editing.out = editing.in = editing.on = false;
     saveTimes();
     saveExtra();
     render();
@@ -508,13 +491,6 @@
     const input = els[`${w}Local`];
     input.addEventListener("input", formatTimeInput);
     input.addEventListener("change", () => updateFromInput(w));
-    input.addEventListener("blur", () => {
-      editing[w] = false;
-      input.readOnly = true;
-    });
-    const activate = () => startEdit(w);
-    input.addEventListener("touchstart", activate);
-    input.addEventListener("mousedown", activate);
     els.btns[`${w}Reset`].addEventListener("click", () => resetOne(w));
   });
 
