@@ -1,6 +1,6 @@
 {
-  "name": "Flight Ops Logger",
-  "short_name": "Ops Logger",
+  "name": "Flight Timer",
+  "short_name": "Flight Timer",
   "start_url": ".",
   "display": "standalone",
   "background_color": "#0a285a",
