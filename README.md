@@ -1,6 +1,6 @@
 # Flight Times Logger (PWA)
 
-Log **OFF/OUT/IN/ON** timestamps with both **local** and **UTC** display, and get **AIR (OFF→ON)** and **BLOCK (OUT→IN)** totals in:
+Log **OFF/OUT/IN/ON** timestamps with both **local** and **UTC** display, and get **AIR (OUT→IN)** and **BLOCK (OFF→ON)** totals in:
 - **HH:MM**
 - **Decimal hours** (e.g., 1.75)
 - **Tenths of hours** (e.g., 1.8)
