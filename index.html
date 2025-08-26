@@ -18,54 +18,54 @@
     html, body { margin:0; padding:0; background:var(--bg); color:var(--ink); font-family: system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, sans-serif; }
     header { padding: 16px; display:flex; align-items:center; gap:12px; background:rgba(255,255,255,0.03); border-bottom: 1px solid rgba(255,255,255,0.08); position:sticky; top:0; backdrop-filter:saturate(120%) blur(6px); }
       header img { width:48px; height:48px; border-radius:8px; }
-    header h1 { font-size: 18px; margin:0; }
+    header h1 { font-size: 22px; margin:0; }
     main { padding: 20px; max-width: 900px; margin: 0 auto; }
     .grid { display:grid; grid-template-columns: 1fr; gap: 16px; }
     @media (min-width: 720px){ .grid { grid-template-columns: 1fr 1fr; } }
     .card { background:var(--card); border:1px solid rgba(255,255,255,0.08); border-radius: 14px; padding: 16px; }
-    .row { display:flex; align-items:center; gap:12px; flex-wrap:nowrap; overflow-x:auto; }
+    .row { display:flex; align-items:center; gap:12px; flex-wrap:wrap; }
     .row + .row { margin-top: 10px; }
-    .btn { border:0; border-radius: 10px; padding: 10px 14px; font-weight: 600; cursor:pointer; }
+    .btn { border:0; border-radius: 10px; padding: 14px 20px; font-weight: 600; cursor:pointer; font-size:18px; }
     .btn.primary { background: var(--ok); color: #062c1f; }
     .btn.warn { background: var(--warn); color: #251a02; }
     .btn.muted { background: rgba(255,255,255,0.08); color: var(--ink); }
     .btn.block { width: 100%; }
     .btn:disabled { background: rgba(255,255,255,0.08); color: var(--muted); cursor:not-allowed; }
-    .kpi { font-size: 28px; font-weight: 700; }
+    .kpi { font-size: 32px; font-weight: 700; }
     .mono { font-family: ui-monospace, SFMono-Regular, Menlo, monospace; }
     .muted { color: var(--muted); }
-    .label {
-      width: 80px;
-      font-weight:700;
-      cursor:pointer;
-      font-size:18px;
-      padding:6px 10px;
-      background:rgba(255,255,255,0.08);
-      border:1px solid rgba(255,255,255,0.2);
-      border-radius:8px;
-      color:inherit;
-    }
-    button.label {
-      background: var(--accent);
-      color: #062c1f;
-    }
-    button.label:disabled {
-      background: rgba(255,255,255,0.04);
-      color: var(--muted);
-      border-color: rgba(255,255,255,0.1);
-      cursor: not-allowed;
-    }
-    .time { flex:1; display:flex; align-items:baseline; gap:6px; width:200px; }
+      .label {
+        min-width: 80px;
+        font-weight:700;
+        font-size:22px;
+        padding:8px 12px;
+        color:inherit;
+      }
+      button.label {
+        background: var(--accent);
+        color: #062c1f;
+        border:none;
+        border-radius:8px;
+        cursor:pointer;
+      }
+      button.label:disabled {
+        background: rgba(255,255,255,0.04);
+        color: var(--muted);
+        border:1px solid rgba(255,255,255,0.1);
+        cursor: not-allowed;
+      }
+    .time { flex:1; display:flex; align-items:baseline; gap:6px; min-width:160px; flex-wrap:wrap; }
     .local-input {
       font-weight:700;
       background:rgba(255,255,255,0.06);
       border:1px solid rgba(255,255,255,0.2);
       border-radius:6px;
-      padding:4px 6px;
+      padding:6px 8px;
       color:var(--ink);
       font-family:inherit;
-      font-size:20px;
-      width:120px;
+      font-size:24px;
+      width:100%;
+      max-width:140px;
     }
     .local-input::placeholder { color: var(--muted); }
     .local-input:focus {
@@ -78,10 +78,10 @@
       background: rgba(255,255,255,0.04);
     }
     .utc { width:72px; }
-    .small { font-size: 14px; }
+    .small { font-size: 16px; }
     footer { margin: 24px 0; text-align:center; color: var(--muted); font-size: 12px; }
     #tz { background: transparent; color: var(--ink); border:1px solid rgba(255,255,255,0.2); border-radius:6px; padding:2px 4px; }
-    .two-col { display:grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+      .two-col { display:grid; grid-template-columns: 1fr 1fr; gap: 10px; flex: 1; }
     .badge { display:inline-block; padding:4px 8px; border-radius:999px; background:rgba(255,255,255,0.06); border:1px solid rgba(255,255,255,0.08); }
     .section-title { font-size:14px; letter-spacing:.08em; text-transform:uppercase; color:var(--muted); margin: 0 0 8px; }
     details { background: rgba(255,255,255,0.04); border-radius: 10px; padding: 10px 12px; }
@@ -198,13 +198,17 @@
         </div>
         <div class="row">
           <div class="label">Start:</div>
-          <input id="fuel-start" class="mono local-input" placeholder="USG" inputmode="decimal" pattern="[0-9.]*">
-          <input id="fuel-start-lbs" class="mono local-input" placeholder="lbs" inputmode="decimal" pattern="[0-9.]*">
+          <div class="two-col">
+            <input id="fuel-start" class="mono local-input" placeholder="USG" inputmode="decimal" pattern="[0-9.]*">
+            <input id="fuel-start-lbs" class="mono local-input" placeholder="lbs" inputmode="decimal" pattern="[0-9.]*">
+          </div>
         </div>
         <div class="row">
           <div class="label">End:</div>
-          <input id="fuel-end" class="mono local-input" placeholder="USG" inputmode="decimal" pattern="[0-9.]*">
-          <input id="fuel-end-lbs" class="mono local-input" placeholder="lbs" inputmode="decimal" pattern="[0-9.]*">
+          <div class="two-col">
+            <input id="fuel-end" class="mono local-input" placeholder="USG" inputmode="decimal" pattern="[0-9.]*">
+            <input id="fuel-end-lbs" class="mono local-input" placeholder="lbs" inputmode="decimal" pattern="[0-9.]*">
+          </div>
         </div>
         <div class="row">
           <button class="btn warn" id="btn-fuel-reset">Reset</button>
@@ -256,7 +260,7 @@
     <footer>
       <div>Timezone: <select id="tz" class="mono"></select></div>
       <div class="small muted">All data stored locally on this device.</div>
-      <div class="small muted">Version 1.1</div>
+      <div class="small muted">Version 1.2</div>
     </footer>
   </main>
 
