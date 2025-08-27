@@ -157,6 +157,21 @@
     return Math.round(ms / 60000); // minutes
   }
 
+  function secondsBetween(a, b) {
+    if (!a || !b) return null;
+    const ms = new Date(b) - new Date(a);
+    if (ms < 0) return null;
+    return Math.round(ms / 1000); // seconds
+  }
+
+  function fmtHHMMSS(secs) {
+    if (secs == null) return "—";
+    const h = Math.floor(secs / 3600);
+    const m = Math.floor((secs % 3600) / 60);
+    const s = secs % 60;
+    return `${String(h).padStart(2,"0")}:${String(m).padStart(2,"0")}:${String(s).padStart(2,"0")}`;
+  }
+
   function fmtHHMM(mins) {
     if (mins == null) return "—";
     const h = Math.floor(mins / 60);
@@ -301,14 +316,24 @@
     });
 
     // Totals
-    const airMins = minutesBetween(times.out, times.in);
-    const blockMins = minutesBetween(times.off, times.on);
+    const airSecs = secondsBetween(times.out, times.in);
+    const blockSecs = secondsBetween(times.off, times.on);
+    const airMins = airSecs != null ? Math.round(airSecs / 60) : null;
+    const blockMins = blockSecs != null ? Math.round(blockSecs / 60) : null;
 
-    els.airHHMM.textContent = fmtHHMM(airMins);
+    els.airHHMM.dataset.hhmmss = fmtHHMMSS(airSecs);
+    els.airHHMM.dataset.decimal = airSecs != null ? (airSecs / 3600).toFixed(2) : "—";
+    if (!els.airHHMM.dataset.mode) els.airHHMM.dataset.mode = "hhmmss";
+    els.airHHMM.textContent =
+      els.airHHMM.dataset.mode === "decimal" ? els.airHHMM.dataset.decimal : els.airHHMM.dataset.hhmmss;
     const aD = fmtDecimals(airMins);
     els.airDecimals.textContent = `Decimal: ${aD.dec} • Tenths: ${aD.tenths}`;
 
-    els.blockHHMM.textContent = fmtHHMM(blockMins);
+    els.blockHHMM.dataset.hhmmss = fmtHHMMSS(blockSecs);
+    els.blockHHMM.dataset.decimal = blockSecs != null ? (blockSecs / 3600).toFixed(2) : "—";
+    if (!els.blockHHMM.dataset.mode) els.blockHHMM.dataset.mode = "hhmmss";
+    els.blockHHMM.textContent =
+      els.blockHHMM.dataset.mode === "decimal" ? els.blockHHMM.dataset.decimal : els.blockHHMM.dataset.hhmmss;
     const bD = fmtDecimals(blockMins);
     els.blockDecimals.textContent = `Decimal: ${bD.dec} • Tenths: ${bD.tenths}`;
 
@@ -479,6 +504,11 @@
     render();
   }
 
+  function toggleTimeDisplay(el) {
+    el.dataset.mode = el.dataset.mode === "decimal" ? "hhmmss" : "decimal";
+    el.textContent = el.dataset.mode === "decimal" ? el.dataset.decimal : el.dataset.hhmmss;
+  }
+
   // Wire up UI
   els.btns.off.addEventListener("click", () => stamp("off"));
   els.btns.out.addEventListener("click", () => stamp("out"));
@@ -508,6 +538,8 @@
   els.tripNumber.addEventListener("change", updateTripLeg);
   els.legNumber.addEventListener("change", updateTripLeg);
   els.tz.addEventListener("change", handleTZChange);
+  els.airHHMM.addEventListener("click", () => toggleTimeDisplay(els.airHHMM));
+  els.blockHHMM.addEventListener("click", () => toggleTimeDisplay(els.blockHHMM));
 
   // Install prompt handling
   window.addEventListener("beforeinstallprompt", (e) => {
