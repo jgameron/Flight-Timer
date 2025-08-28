@@ -421,12 +421,13 @@
   function copyAll() {
     const lines = [];
     if (extra.tripNumber != null || extra.legNumber != null) {
-      lines.push(`Trip: ${extra.tripNumber ?? '—'} | Leg: ${extra.legNumber ?? '—'}`);
+      if (extra.tripNumber != null) lines.push(`Trip: ${extra.tripNumber}`);
+      if (extra.legNumber != null) lines.push(`Leg: ${extra.legNumber}`);
       lines.push("");
     }
     const push = (label, val) => {
-      if (!val) { lines.push(`${label}: —`); return; }
-      lines.push(`${label}: ${toLocalString(val)} | ${toUTCString(val)}`);
+      if (!val) return;
+      lines.push(`${label}: Local ${toLocalString(val)} | UTC ${toUTCString(val)}`);
     };
     push("OFF", times.off);
     push("OUT", times.out);
@@ -435,21 +436,27 @@
 
     const airMins = minutesBetween(times.out, times.in);
     const blockMins = minutesBetween(times.off, times.on);
-    const aD = fmtDecimals(airMins);
-    const bD = fmtDecimals(blockMins);
+    if (airMins != null || blockMins != null) lines.push("");
+    if (airMins != null) {
+      const aD = fmtDecimals(airMins);
+      lines.push(`AIR (OUT→IN): ${fmtHHMM(airMins)} | Decimal ${aD.dec} | Tenths ${aD.tenths}`);
+    }
+    if (blockMins != null) {
+      const bD = fmtDecimals(blockMins);
+      lines.push(`BLOCK (OFF→ON): ${fmtHHMM(blockMins)} | Decimal ${bD.dec} | Tenths ${bD.tenths}`);
+    }
 
-    lines.push("");
-    lines.push(`AIR (OUT→IN): ${fmtHHMM(airMins)} | Decimal ${aD.dec} | Tenths ${aD.tenths}`);
-    lines.push(`BLOCK (OFF→ON): ${fmtHHMM(blockMins)} | Decimal ${bD.dec} | Tenths ${bD.tenths}`);
-
-    const hobbsUsed = extra.hobbsStart != null && extra.hobbsEnd != null ? (extra.hobbsEnd - extra.hobbsStart).toFixed(1) : "—";
-    const tachUsed = extra.tachStart != null && extra.tachEnd != null ? (extra.tachEnd - extra.tachStart).toFixed(1) : "—";
+    const hobbsUsed = extra.hobbsStart != null && extra.hobbsEnd != null ? (extra.hobbsEnd - extra.hobbsStart).toFixed(1) : null;
+    const tachUsed = extra.tachStart != null && extra.tachEnd != null ? (extra.tachEnd - extra.tachStart).toFixed(1) : null;
     const fuelFactor = extra.fuelType === "JetA" ? 6.67 : 6.0;
-    const fuelUsed = extra.fuelStart != null && extra.fuelEnd != null ? (extra.fuelStart - extra.fuelEnd).toFixed(1) : "—";
-    const fuelUsedLbs = fuelUsed !== "—" ? (parseFloat(fuelUsed) * fuelFactor).toFixed(1) : "—";
-    lines.push(`HOBBS USED: ${hobbsUsed}`);
-    lines.push(`TACH USED: ${tachUsed}`);
-    lines.push(`FUEL USED (${extra.fuelType}): ${fuelUsed} USG | ${fuelUsedLbs} lbs`);
+    const fuelUsed = extra.fuelStart != null && extra.fuelEnd != null ? (extra.fuelStart - extra.fuelEnd).toFixed(1) : null;
+    const fuelUsedLbs = fuelUsed != null ? (parseFloat(fuelUsed) * fuelFactor).toFixed(1) : null;
+    if (hobbsUsed != null || tachUsed != null || fuelUsed != null) {
+      lines.push("");
+      if (hobbsUsed != null) lines.push(`HOBBS USED: ${hobbsUsed}`);
+      if (tachUsed != null) lines.push(`TACH USED: ${tachUsed}`);
+      if (fuelUsed != null) lines.push(`FUEL USED (${extra.fuelType}): ${fuelUsed} USG | ${fuelUsedLbs} lbs`);
+    }
 
     const text = lines.join("\n");
     navigator.clipboard.writeText(text).then(() => {

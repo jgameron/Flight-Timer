@@ -37,6 +37,6 @@ All data persists to **localStorage** and the app works **offline** via a servic
 ## Notes
 
 - Times are saved as ISO strings in localStorage under key `ftl.v1.times`.
-- Copy button exports a plain-text summary to your clipboard.
+- Copy button exports a plain-text summary of entered fields to your clipboard.
 - Reset clears all four timestamps.
 - If either endpoint (e.g., OFF or ON) is missing, totals show as `—`.
