@@ -541,7 +541,18 @@
   // SW registration
   if ("serviceWorker" in navigator) {
     window.addEventListener("load", () => {
-      navigator.serviceWorker.register("./sw.js").catch(console.error);
+      navigator.serviceWorker
+        .register("./sw.js")
+        .then((reg) => {
+          const update = () => reg.update().catch(() => {});
+          update();
+          window.addEventListener("online", update);
+        })
+        .catch(console.error);
+
+      navigator.serviceWorker.addEventListener("controllerchange", () => {
+        window.location.reload();
+      });
     });
   }
 
