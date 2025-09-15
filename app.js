@@ -180,10 +180,37 @@
     e.target.value = v;
   }
 
+  function parseLocalTime(val){
+    if(!val) return null;
+    const trimmed = val.trim();
+    if(!trimmed) return null;
+    let parts = trimmed.split(":").map((part) => part.trim());
+    if(parts.length === 1){
+      const digits = parts[0].replace(/[^0-9]/g, "");
+      if(digits.length === 4){
+        parts = [digits.slice(0,2), digits.slice(2)];
+      } else if(digits.length === 6){
+        parts = [digits.slice(0,2), digits.slice(2,4), digits.slice(4)];
+      } else {
+        return null;
+      }
+    }
+    if(parts.length < 2 || parts.length > 3) return null;
+    if(parts.some((p) => p === "")) return null;
+    const [hStr, mStr, sStr = "0"] = parts;
+    const h = Number(hStr);
+    const m = Number(mStr);
+    const s = Number(sStr);
+    if ([h, m, s].some((n) => Number.isNaN(n))) return null;
+    if (![h, m, s].every(Number.isInteger)) return null;
+    if (h < 0 || h > 23 || m < 0 || m > 59 || s < 0 || s > 59) return null;
+    return { h, m, s };
+  }
+
   function updateFromInput(which){
-    const val = els[`${which}Local`].value;
-    if(!/^\d{2}:\d{2}:\d{2}$/.test(val)) return;
-    const [h,m,s] = val.split(":").map(Number);
+    const parsed = parseLocalTime(els[`${which}Local`].value);
+    if(!parsed) return;
+    const { h, m, s } = parsed;
     let base;
     if (tzSetting.mode === "manual") {
       const tz = tzSetting.tz;
