@@ -107,7 +107,7 @@
         <li>Tap each label to capture the current local time; UTC appears beside it.</li>
         <li>Touch the time to edit or add a manual input</li>
         <li>Enter Hobbs, Tach, and Fuel readings to track usage.</li>
-        <li>Totals show AIR, BLOCK, and other values.</li>
+        <li>Totals show BLOCK, AIR, and other values.</li>
         <li>Data stays on this device and the app works offline.</li>
       </ul>
     </details>
@@ -123,14 +123,6 @@
       </div>
       <div class="spacer"></div>
       <div class="row">
-        <button class="label" id="btn-off" type="button">OFF:</button>
-        <div class="time">
-          <input id="off-local" class="mono local-input" placeholder="HH:MM:SS" inputmode="numeric" pattern="[0-9:]*" maxlength="8">
-          <span id="off-utc" class="mono small muted utc">—</span>
-        </div>
-        <button class="btn warn" id="btn-off-reset">Reset</button>
-      </div>
-      <div class="row">
         <button class="label" id="btn-out" type="button">OUT:</button>
         <div class="time">
           <input id="out-local" class="mono local-input" placeholder="HH:MM:SS" inputmode="numeric" pattern="[0-9:]*" maxlength="8">
@@ -139,12 +131,12 @@
         <button class="btn warn" id="btn-out-reset">Reset</button>
       </div>
       <div class="row">
-        <button class="label" id="btn-in" type="button">IN:</button>
+        <button class="label" id="btn-off" type="button">OFF:</button>
         <div class="time">
-          <input id="in-local" class="mono local-input" placeholder="HH:MM:SS" inputmode="numeric" pattern="[0-9:]*" maxlength="8">
-          <span id="in-utc" class="mono small muted utc">—</span>
+          <input id="off-local" class="mono local-input" placeholder="HH:MM:SS" inputmode="numeric" pattern="[0-9:]*" maxlength="8">
+          <span id="off-utc" class="mono small muted utc">—</span>
         </div>
-        <button class="btn warn" id="btn-in-reset">Reset</button>
+        <button class="btn warn" id="btn-off-reset">Reset</button>
       </div>
       <div class="row">
         <button class="label" id="btn-on" type="button">ON:</button>
@@ -153,6 +145,14 @@
           <span id="on-utc" class="mono small muted utc">—</span>
         </div>
         <button class="btn warn" id="btn-on-reset">Reset</button>
+      </div>
+      <div class="row">
+        <button class="label" id="btn-in" type="button">IN:</button>
+        <div class="time">
+          <input id="in-local" class="mono local-input" placeholder="HH:MM:SS" inputmode="numeric" pattern="[0-9:]*" maxlength="8">
+          <span id="in-utc" class="mono small muted utc">—</span>
+        </div>
+        <button class="btn warn" id="btn-in-reset">Reset</button>
       </div>
     </section>
       <section class="card">
@@ -219,14 +219,14 @@
       <div class="section-title">Totals</div>
       <div class="grid">
         <div>
-          <div class="badge">AIR (OFF → ON)</div>
-          <div class="kpi mono" id="air-hhmm">—</div>
-          <div class="mono small muted" id="air-decimals">—</div>
-        </div>
-        <div>
           <div class="badge">BLOCK (OUT → IN)</div>
           <div class="kpi mono" id="block-hhmm">—</div>
           <div class="mono small muted" id="block-decimals">—</div>
+        </div>
+        <div>
+          <div class="badge">AIR (OFF → ON)</div>
+          <div class="kpi mono" id="air-hhmm">—</div>
+          <div class="mono small muted" id="air-decimals">—</div>
         </div>
         <div>
           <div class="badge">HOBBS USED</div>

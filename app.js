@@ -328,16 +328,16 @@
     });
 
     // Totals
-    const airMins = minutesBetween(times.off, times.on);
     const blockMins = minutesBetween(times.out, times.in);
-
-    els.airHHMM.textContent = fmtHHMM(airMins);
-    const aD = fmtDecimals(airMins);
-    els.airDecimals.textContent = `Decimal: ${aD.dec} • Tenths: ${aD.tenths}`;
+    const airMins = minutesBetween(times.off, times.on);
 
     els.blockHHMM.textContent = fmtHHMM(blockMins);
     const bD = fmtDecimals(blockMins);
     els.blockDecimals.textContent = `Decimal: ${bD.dec} • Tenths: ${bD.tenths}`;
+
+    els.airHHMM.textContent = fmtHHMM(airMins);
+    const aD = fmtDecimals(airMins);
+    els.airDecimals.textContent = `Decimal: ${aD.dec} • Tenths: ${aD.tenths}`;
 
     // Extras
     els.tripNumber.value = extra.tripNumber ?? "";
@@ -456,21 +456,21 @@
       if (!val) return;
       lines.push(`${label}: Local ${toLocalString(val)} | UTC ${toUTCString(val)}`);
     };
-    push("OFF", times.off);
     push("OUT", times.out);
-    push("IN", times.in);
+    push("OFF", times.off);
     push("ON", times.on);
+    push("IN", times.in);
 
-    const airMins = minutesBetween(times.off, times.on);
     const blockMins = minutesBetween(times.out, times.in);
+    const airMins = minutesBetween(times.off, times.on);
     if (airMins != null || blockMins != null) lines.push("");
-    if (airMins != null) {
-      const aD = fmtDecimals(airMins);
-      lines.push(`AIR (OFF→ON): ${fmtHHMM(airMins)} | Decimal ${aD.dec} | Tenths ${aD.tenths}`);
-    }
     if (blockMins != null) {
       const bD = fmtDecimals(blockMins);
       lines.push(`BLOCK (OUT→IN): ${fmtHHMM(blockMins)} | Decimal ${bD.dec} | Tenths ${bD.tenths}`);
+    }
+    if (airMins != null) {
+      const aD = fmtDecimals(airMins);
+      lines.push(`AIR (OFF→ON): ${fmtHHMM(airMins)} | Decimal ${aD.dec} | Tenths ${aD.tenths}`);
     }
 
     const hobbsUsed = extra.hobbsStart != null && extra.hobbsEnd != null ? (extra.hobbsEnd - extra.hobbsStart).toFixed(1) : null;
@@ -514,10 +514,10 @@
   }
 
   // Wire up UI
-  els.btns.off.addEventListener("click", () => stamp("off"));
   els.btns.out.addEventListener("click", () => stamp("out"));
-  els.btns.in.addEventListener("click", () => stamp("in"));
+  els.btns.off.addEventListener("click", () => stamp("off"));
   els.btns.on.addEventListener("click", () => stamp("on"));
+  els.btns.in.addEventListener("click", () => stamp("in"));
   els.btns.reset.addEventListener("click", resetAll);
   els.btns.copy.addEventListener("click", copyAll);
 
