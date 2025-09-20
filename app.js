@@ -328,8 +328,8 @@
     });
 
     // Totals
-    const airMins = minutesBetween(times.out, times.in);
-    const blockMins = minutesBetween(times.off, times.on);
+    const airMins = minutesBetween(times.off, times.on);
+    const blockMins = minutesBetween(times.out, times.in);
 
     els.airHHMM.textContent = fmtHHMM(airMins);
     const aD = fmtDecimals(airMins);
@@ -461,16 +461,16 @@
     push("IN", times.in);
     push("ON", times.on);
 
-    const airMins = minutesBetween(times.out, times.in);
-    const blockMins = minutesBetween(times.off, times.on);
+    const airMins = minutesBetween(times.off, times.on);
+    const blockMins = minutesBetween(times.out, times.in);
     if (airMins != null || blockMins != null) lines.push("");
     if (airMins != null) {
       const aD = fmtDecimals(airMins);
-      lines.push(`AIR (OUT→IN): ${fmtHHMM(airMins)} | Decimal ${aD.dec} | Tenths ${aD.tenths}`);
+      lines.push(`AIR (OFF→ON): ${fmtHHMM(airMins)} | Decimal ${aD.dec} | Tenths ${aD.tenths}`);
     }
     if (blockMins != null) {
       const bD = fmtDecimals(blockMins);
-      lines.push(`BLOCK (OFF→ON): ${fmtHHMM(blockMins)} | Decimal ${bD.dec} | Tenths ${bD.tenths}`);
+      lines.push(`BLOCK (OUT→IN): ${fmtHHMM(blockMins)} | Decimal ${bD.dec} | Tenths ${bD.tenths}`);
     }
 
     const hobbsUsed = extra.hobbsStart != null && extra.hobbsEnd != null ? (extra.hobbsEnd - extra.hobbsStart).toFixed(1) : null;

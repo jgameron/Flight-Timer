@@ -4,7 +4,7 @@
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>Flight Timer</title>
-  <meta name="description" content="PWA to log OFF/OUT/IN/ON timestamps with local & UTC times and compute BLOCK & AIR totals.">
+  <meta name="description" content="PWA to log OFF/OUT/IN/ON timestamps with local & UTC times and compute BLOCK (OUT→IN) & AIR (OFF→ON) totals.">
     <link rel="manifest" href="manifest.webmanifest">
     <link rel="icon" href="assets/logo.svg" type="image/svg+xml">
     <link rel="apple-touch-icon" href="assets/logo.svg">
@@ -219,12 +219,12 @@
       <div class="section-title">Totals</div>
       <div class="grid">
         <div>
-          <div class="badge">AIR (OUT → IN)</div>
+          <div class="badge">AIR (OFF → ON)</div>
           <div class="kpi mono" id="air-hhmm">—</div>
           <div class="mono small muted" id="air-decimals">—</div>
         </div>
         <div>
-          <div class="badge">BLOCK (OFF → ON)</div>
+          <div class="badge">BLOCK (OUT → IN)</div>
           <div class="kpi mono" id="block-hhmm">—</div>
           <div class="mono small muted" id="block-decimals">—</div>
         </div>
