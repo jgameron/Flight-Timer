@@ -57,6 +57,7 @@
       inReset: $("#btn-in-reset"),
       onReset: $("#btn-on-reset"),
       reset: $("#btn-reset"),
+      nextFlight: $("#btn-next-flight"),
       copy: $("#btn-copy"),
       install: $("#btn-install"),
       hobbsReset: $("#btn-hobbs-reset"),
@@ -445,6 +446,22 @@
     render();
   }
 
+  function nextFlight() {
+    if (!confirm("Start next flight?")) return;
+    times = { ...emptyTimes };
+    extra.tripNumber = null;
+    extra.legNumber = null;
+    extra.hobbsStart = extra.hobbsEnd != null ? extra.hobbsEnd : null;
+    extra.hobbsEnd = null;
+    extra.tachStart = extra.tachEnd != null ? extra.tachEnd : null;
+    extra.tachEnd = null;
+    extra.fuelStart = extra.fuelEnd != null ? extra.fuelEnd : null;
+    extra.fuelEnd = null;
+    saveTimes();
+    saveExtra();
+    render();
+  }
+
   function copyAll() {
     const lines = [];
     if (extra.tripNumber != null || extra.legNumber != null) {
@@ -473,15 +490,39 @@
       lines.push(`AIR (OFF→ON): ${fmtHHMM(airMins)} | Decimal ${aD.dec} | Tenths ${aD.tenths}`);
     }
 
-    const hobbsUsed = extra.hobbsStart != null && extra.hobbsEnd != null ? (extra.hobbsEnd - extra.hobbsStart).toFixed(1) : null;
-    const tachUsed = extra.tachStart != null && extra.tachEnd != null ? (extra.tachEnd - extra.tachStart).toFixed(1) : null;
+    const hobbsUsed =
+      extra.hobbsStart != null && extra.hobbsEnd != null
+        ? (extra.hobbsEnd - extra.hobbsStart).toFixed(1)
+        : null;
+    const tachUsed =
+      extra.tachStart != null && extra.tachEnd != null
+        ? (extra.tachEnd - extra.tachStart).toFixed(1)
+        : null;
     const fuelFactor = extra.fuelType === "JetA" ? 6.67 : 6.0;
     const fuelUsed = extra.fuelStart != null && extra.fuelEnd != null ? (extra.fuelStart - extra.fuelEnd).toFixed(1) : null;
     const fuelUsedLbs = fuelUsed != null ? (parseFloat(fuelUsed) * fuelFactor).toFixed(1) : null;
-    if (hobbsUsed != null || tachUsed != null || fuelUsed != null) {
+    const hobbsStart = extra.hobbsStart != null ? extra.hobbsStart.toFixed(1) : "—";
+    const hobbsEnd = extra.hobbsEnd != null ? extra.hobbsEnd.toFixed(1) : "—";
+    const tachStart = extra.tachStart != null ? extra.tachStart.toFixed(1) : "—";
+    const tachEnd = extra.tachEnd != null ? extra.tachEnd.toFixed(1) : "—";
+    const hobbsUsedDisplay = hobbsUsed ?? "—";
+    const tachUsedDisplay = tachUsed ?? "—";
+    if (
+      extra.hobbsStart != null ||
+      extra.hobbsEnd != null ||
+      extra.tachStart != null ||
+      extra.tachEnd != null ||
+      hobbsUsed != null ||
+      tachUsed != null ||
+      fuelUsed != null
+    ) {
       lines.push("");
-      if (hobbsUsed != null) lines.push(`HOBBS USED: ${hobbsUsed}`);
-      if (tachUsed != null) lines.push(`TACH USED: ${tachUsed}`);
+      if (extra.hobbsStart != null || extra.hobbsEnd != null || hobbsUsed != null) {
+        lines.push(`HOBBS: Start ${hobbsStart} | End ${hobbsEnd} | Used ${hobbsUsedDisplay}`);
+      }
+      if (extra.tachStart != null || extra.tachEnd != null || tachUsed != null) {
+        lines.push(`TACH: Start ${tachStart} | End ${tachEnd} | Used ${tachUsedDisplay}`);
+      }
       if (fuelUsed != null) lines.push(`FUEL USED (${extra.fuelType}): ${fuelUsed} USG | ${fuelUsedLbs} lbs`);
     }
 
@@ -519,6 +560,7 @@
   els.btns.on.addEventListener("click", () => stamp("on"));
   els.btns.in.addEventListener("click", () => stamp("in"));
   els.btns.reset.addEventListener("click", resetAll);
+  els.btns.nextFlight.addEventListener("click", nextFlight);
   els.btns.copy.addEventListener("click", copyAll);
 
   ["off","out","in","on"].forEach((w) => {
