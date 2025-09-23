@@ -391,22 +391,42 @@
 
   function offsetHoursStringTZ(tz) {
     const now = new Date();
-    const tzStr = now.toLocaleString("en-US", {
-      timeZone: tz,
-      year: "numeric",
-      month: "2-digit",
-      day: "2-digit",
-      hour: "2-digit",
-      minute: "2-digit",
-      second: "2-digit"
-    });
-    const tzDate = new Date(tzStr);
-    const offsetMin = Math.round((tzDate - now) / 60000 + now.getTimezoneOffset());
-    const sign = offsetMin >= 0 ? "+" : "-";
-    const abs = Math.abs(offsetMin);
-    const h = String(Math.floor(abs / 60)).padStart(2, "0");
-    const m = String(abs % 60).padStart(2, "0");
-    return `${sign}${h}:${m}`;
+    try {
+      const formatter = new Intl.DateTimeFormat("en-US", {
+        timeZone: tz,
+        timeZoneName: "shortOffset"
+      });
+      const tzName = formatter
+        .formatToParts(now)
+        .find((part) => part.type === "timeZoneName")?.value;
+      if (tzName) {
+        if (tzName === "UTC") return "+00:00";
+        const match = tzName.match(/GMT([+-])(\d{1,2})(?::(\d{2}))?/);
+        if (match) {
+          const [, sign, hours, minutes] = match;
+          const h = hours.padStart(2, "0");
+          const m = (minutes ?? "00").padStart(2, "0");
+          return `${sign}${h}:${m}`;
+        }
+      }
+    } catch {
+      // fall through to manual calculation
+    }
+
+    try {
+      const tzDate = new Date(now.toLocaleString("en-US", { timeZone: tz }));
+      const utcDate = new Date(now.toLocaleString("en-US", { timeZone: "UTC" }));
+      const offsetMin = Math.round((tzDate - utcDate) / 60000);
+      const sign = offsetMin >= 0 ? "+" : "-";
+      const abs = Math.abs(offsetMin);
+      const h = String(Math.floor(abs / 60)).padStart(2, "0");
+      const m = String(abs % 60).padStart(2, "0");
+      return `${sign}${h}:${m}`;
+    } catch {
+      // ignore and return UTC as a safe default
+    }
+
+    return "+00:00";
   }
 
   function initTZOptions() {
