@@ -67,6 +67,8 @@
     installUI: $("#install-ui"),
     installCard: $("#install-card")
   };
+  const copyButtons = document.querySelectorAll("[data-copy-target]");
+  const copyButtonTimers = new WeakMap();
 
 
   const emptyTimes = { off:null, out:null, in:null, on:null };
@@ -541,6 +543,62 @@
     });
   }
 
+  function sanitizeCopyValue(value) {
+    if (value == null) return "";
+    return String(value).replace(/[^0-9.]/g, "");
+  }
+
+  function fallbackCopyText(text) {
+    const ta = document.createElement("textarea");
+    ta.value = text;
+    ta.setAttribute("readonly", "");
+    ta.style.position = "absolute";
+    ta.style.left = "-9999px";
+    document.body.appendChild(ta);
+    ta.select();
+    let success = false;
+    try {
+      success = document.execCommand("copy");
+    } catch {
+      success = false;
+    }
+    document.body.removeChild(ta);
+    return success;
+  }
+
+  function copyFieldValue(id) {
+    const el = document.getElementById(id);
+    if (!el) return Promise.reject(new Error("missing element"));
+    const sanitized = sanitizeCopyValue(el.value);
+    if (!sanitized) return Promise.reject(new Error("empty"));
+    if (navigator.clipboard && typeof navigator.clipboard.writeText === "function") {
+      return navigator.clipboard.writeText(sanitized).catch(() => {
+        if (fallbackCopyText(sanitized)) return undefined;
+        return Promise.reject(new Error("copy failed"));
+      });
+    }
+    return new Promise((resolve, reject) => {
+      if (fallbackCopyText(sanitized)) resolve();
+      else reject(new Error("copy failed"));
+    });
+  }
+
+  function setCopyButtonFeedback(btn, message) {
+    if (!btn.dataset.originalText) {
+      btn.dataset.originalText = btn.textContent;
+    }
+    btn.textContent = message;
+    const timer = copyButtonTimers.get(btn);
+    if (timer) clearTimeout(timer);
+    copyButtonTimers.set(
+      btn,
+      setTimeout(() => {
+        btn.textContent = btn.dataset.originalText;
+        copyButtonTimers.delete(btn);
+      }, 1500)
+    );
+  }
+
   function handleTZChange() {
     const val = els.tz.value;
     if (val === "auto") {
@@ -562,6 +620,16 @@
   els.btns.reset.addEventListener("click", resetAll);
   els.btns.nextFlight.addEventListener("click", nextFlight);
   els.btns.copy.addEventListener("click", copyAll);
+
+  copyButtons.forEach((btn) => {
+    btn.addEventListener("click", () => {
+      const target = btn.dataset.copyTarget;
+      if (!target) return;
+      copyFieldValue(target)
+        .then(() => setCopyButtonFeedback(btn, "Copied!"))
+        .catch(() => setCopyButtonFeedback(btn, "No data"));
+    });
+  });
 
   ["off","out","in","on"].forEach((w) => {
     const input = els[`${w}Local`];
