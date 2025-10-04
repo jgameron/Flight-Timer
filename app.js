@@ -5,6 +5,7 @@
   const stateKey = "ftl.v1.times";
   const extraKey = "ftl.v1.extra";
   const tzKey = "ftl.v1.tz";
+  const copyPrefsKey = "ftl.v1.copy";
   const usTimeZones = [
     "America/New_York",
     "America/Chicago",
@@ -47,6 +48,16 @@
     tachUsed: $("#tach-used"),
     fuelUsedUSG: $("#fuel-used-usg"),
     fuelUsedLbs: $("#fuel-used-lbs"),
+    fuelCopyButtons: {
+      start: $("#fuel-start-copy"),
+      end: $("#fuel-end-copy"),
+    },
+    fuelCopyToggle: {
+      usg: $("#fuel-copy-usg"),
+      lbs: $("#fuel-copy-lbs"),
+    },
+    blockCopy: $("#block-copy"),
+    airCopy: $("#air-copy"),
     btns: {
       off: $("#btn-off"),
       out: $("#btn-out"),
@@ -67,6 +78,8 @@
     installUI: $("#install-ui"),
     installCard: $("#install-card")
   };
+  const copyButtons = document.querySelectorAll("[data-copy-target],[data-copy-duration]");
+  const copyButtonTimers = new WeakMap();
 
 
   const emptyTimes = { off:null, out:null, in:null, on:null };
@@ -115,11 +128,29 @@
       return { mode: "auto", tz: Intl.DateTimeFormat().resolvedOptions().timeZone };
     }
   };
+  const defaultCopyPrefs = { fuelUnit: "lbs" };
+  const loadCopyPrefs = () => {
+    try {
+      const raw = localStorage.getItem(copyPrefsKey);
+      if (!raw) return { ...defaultCopyPrefs };
+      const parsed = JSON.parse(raw);
+      return { ...defaultCopyPrefs, ...parsed };
+    } catch {
+      return { ...defaultCopyPrefs };
+    }
+  };
+  const saveCopyPrefs = () => {
+    localStorage.setItem(copyPrefsKey, JSON.stringify(copyPrefs));
+  };
   let times = loadTimes();
   let extra = loadExtra();
   let tzSetting = loadTZ();
+  let copyPrefs = loadCopyPrefs();
   if (tzSetting.mode === "manual" && !usTimeZones.includes(tzSetting.tz)) {
     tzSetting = { mode: "auto", tz: Intl.DateTimeFormat().resolvedOptions().timeZone };
+  }
+  if (!copyPrefs || (copyPrefs.fuelUnit !== "lbs" && copyPrefs.fuelUnit !== "usg")) {
+    copyPrefs = { ...defaultCopyPrefs };
   }
 
   initTZOptions();
@@ -376,6 +407,30 @@
     els.fuelUsedUSG.textContent = fuelUsedVal != null ? `${fuelUsedVal.toFixed(1)} USG` : "—";
     els.fuelUsedLbs.textContent = fuelUsedVal != null ? `${(fuelUsedVal * factor).toFixed(1)} lbs` : "—";
 
+    const fuelUnit = copyPrefs.fuelUnit;
+    if (els.fuelCopyButtons.start) {
+      const targetStart = fuelUnit === "lbs" ? "fuel-start-lbs" : "fuel-start";
+      const labelStart = fuelUnit === "lbs" ? "Copy lbs" : "Copy USG";
+      els.fuelCopyButtons.start.dataset.copyTarget = targetStart;
+      els.fuelCopyButtons.start.textContent = labelStart;
+      els.fuelCopyButtons.start.setAttribute("aria-label", `Copy fuel start ${fuelUnit}`);
+      els.fuelCopyButtons.start.dataset.originalText = labelStart;
+    }
+    if (els.fuelCopyButtons.end) {
+      const targetEnd = fuelUnit === "lbs" ? "fuel-end-lbs" : "fuel-end";
+      const labelEnd = fuelUnit === "lbs" ? "Copy lbs" : "Copy USG";
+      els.fuelCopyButtons.end.dataset.copyTarget = targetEnd;
+      els.fuelCopyButtons.end.textContent = labelEnd;
+      els.fuelCopyButtons.end.setAttribute("aria-label", `Copy fuel end ${fuelUnit}`);
+      els.fuelCopyButtons.end.dataset.originalText = labelEnd;
+    }
+    Object.entries(els.fuelCopyToggle).forEach(([unit, btn]) => {
+      if (!btn) return;
+      const isActive = fuelUnit === unit;
+      btn.classList.toggle("active", isActive);
+      btn.setAttribute("aria-pressed", isActive ? "true" : "false");
+    });
+
     // Timezone
     try {
       const deviceTZ = Intl.DateTimeFormat().resolvedOptions().timeZone;
@@ -541,6 +596,82 @@
     });
   }
 
+  function sanitizeCopyValue(value) {
+    if (value == null) return "";
+    return String(value).replace(/[^0-9.]/g, "");
+  }
+
+  function fallbackCopyText(text) {
+    const ta = document.createElement("textarea");
+    ta.value = text;
+    ta.setAttribute("readonly", "");
+    ta.style.position = "absolute";
+    ta.style.left = "-9999px";
+    document.body.appendChild(ta);
+    ta.select();
+    let success = false;
+    try {
+      success = document.execCommand("copy");
+    } catch {
+      success = false;
+    }
+    document.body.removeChild(ta);
+    return success;
+  }
+
+  function copyTextValue(raw) {
+    const sanitized = sanitizeCopyValue(raw);
+    if (!sanitized) return Promise.reject(new Error("empty"));
+    if (navigator.clipboard && typeof navigator.clipboard.writeText === "function") {
+      return navigator.clipboard.writeText(sanitized).catch(() => {
+        if (fallbackCopyText(sanitized)) return undefined;
+        return Promise.reject(new Error("copy failed"));
+      });
+    }
+    return new Promise((resolve, reject) => {
+      if (fallbackCopyText(sanitized)) resolve();
+      else reject(new Error("copy failed"));
+    });
+  }
+
+  function copyFieldValue(id) {
+    const el = document.getElementById(id);
+    if (!el) return Promise.reject(new Error("missing element"));
+    const value = "value" in el ? el.value : el.textContent;
+    return copyTextValue(value);
+  }
+
+  function durationToHHMM(mins) {
+    if (mins == null) return "";
+    const h = Math.floor(mins / 60);
+    const m = mins % 60;
+    return `${String(h).padStart(2, "0")}${String(m).padStart(2, "0")}`;
+  }
+
+  function copyDurationValue(kind) {
+    let mins = null;
+    if (kind === "block") mins = minutesBetween(times.out, times.in);
+    else if (kind === "air") mins = minutesBetween(times.off, times.on);
+    if (mins == null) return Promise.reject(new Error("empty"));
+    return copyTextValue(durationToHHMM(mins));
+  }
+
+  function setCopyButtonFeedback(btn, message) {
+    if (!btn.dataset.originalText) {
+      btn.dataset.originalText = btn.textContent;
+    }
+    btn.textContent = message;
+    const timer = copyButtonTimers.get(btn);
+    if (timer) clearTimeout(timer);
+    copyButtonTimers.set(
+      btn,
+      setTimeout(() => {
+        btn.textContent = btn.dataset.originalText;
+        copyButtonTimers.delete(btn);
+      }, 1500)
+    );
+  }
+
   function handleTZChange() {
     const val = els.tz.value;
     if (val === "auto") {
@@ -563,6 +694,17 @@
   els.btns.nextFlight.addEventListener("click", nextFlight);
   els.btns.copy.addEventListener("click", copyAll);
 
+  copyButtons.forEach((btn) => {
+    btn.addEventListener("click", () => {
+      const duration = btn.dataset.copyDuration;
+      const target = btn.dataset.copyTarget;
+      const promise = duration ? copyDurationValue(duration) : target ? copyFieldValue(target) : Promise.reject(new Error("empty"));
+      promise
+        .then(() => setCopyButtonFeedback(btn, "Copied!"))
+        .catch(() => setCopyButtonFeedback(btn, "No data"));
+    });
+  });
+
   ["off","out","in","on"].forEach((w) => {
     const input = els[`${w}Local`];
     input.addEventListener("input", formatTimeInput);
@@ -580,6 +722,15 @@
   els.fuelStartLbs.addEventListener("change", () => updateFuel("start","lbs"));
   els.fuelEnd.addEventListener("change", () => updateFuel("end","usg"));
   els.fuelEndLbs.addEventListener("change", () => updateFuel("end","lbs"));
+  Object.entries(els.fuelCopyToggle).forEach(([unit, btn]) => {
+    if (!btn) return;
+    btn.addEventListener("click", () => {
+      if (copyPrefs.fuelUnit === unit) return;
+      copyPrefs.fuelUnit = unit;
+      saveCopyPrefs();
+      render();
+    });
+  });
   els.btns.fuelReset.addEventListener("click", resetFuel);
   els.tripNumber.addEventListener("change", updateTripLeg);
   els.legNumber.addEventListener("change", updateTripLeg);
