@@ -34,6 +34,32 @@
     .kpi { font-size: 32px; font-weight: 700; }
     .mono { font-family: ui-monospace, SFMono-Regular, Menlo, monospace; }
     .muted { color: var(--muted); }
+    .copy-btn {
+      background: rgba(255,255,255,0.08);
+      color: var(--ink);
+      border:1px solid rgba(255,255,255,0.18);
+      border-radius: 6px;
+      padding:6px 10px;
+      font-size: 14px;
+      font-weight:600;
+      cursor:pointer;
+    }
+    .copy-btn:focus {
+      outline:2px solid var(--accent);
+      outline-offset:2px;
+    }
+    .copy-btn:disabled {
+      opacity:0.6;
+      cursor:not-allowed;
+    }
+    .input-with-copy {
+      display:flex;
+      gap:8px;
+      align-items:center;
+    }
+    .input-with-copy .local-input {
+      flex:1;
+    }
       .label {
         min-width: 80px;
         font-weight:700;
@@ -88,6 +114,12 @@
     summary { cursor: pointer; }
     a { color: var(--accent); }
     .spacer { height:8px; }
+    .kpi-with-copy { display:flex; align-items:center; gap:10px; flex-wrap:wrap; }
+    .copy-mode-toggle { display:inline-flex; border:1px solid rgba(255,255,255,0.18); border-radius:8px; overflow:hidden; }
+    .copy-mode-toggle button { background:transparent; color:var(--ink); border:0; padding:8px 14px; font-weight:600; cursor:pointer; }
+    .copy-mode-toggle button.active { background:var(--accent); color:#062c1f; }
+    .copy-mode-toggle button:focus { outline:2px solid var(--accent); outline-offset:2px; }
+    .copy-mode-label { font-size:16px; font-weight:600; }
   </style>
 </head>
 <body>
@@ -128,6 +160,7 @@
         <div class="time">
           <input id="out-local" class="mono local-input" placeholder="HH:MM:SS" inputmode="numeric" pattern="[0-9:]*" maxlength="8">
           <span id="out-utc" class="mono small muted utc">—</span>
+          <button class="copy-btn" type="button" data-copy-target="out-local" aria-label="Copy OUT value">Copy</button>
         </div>
         <button class="btn warn" id="btn-out-reset">Reset</button>
       </div>
@@ -136,6 +169,7 @@
         <div class="time">
           <input id="off-local" class="mono local-input" placeholder="HH:MM:SS" inputmode="numeric" pattern="[0-9:]*" maxlength="8">
           <span id="off-utc" class="mono small muted utc">—</span>
+          <button class="copy-btn" type="button" data-copy-target="off-local" aria-label="Copy OFF value">Copy</button>
         </div>
         <button class="btn warn" id="btn-off-reset">Reset</button>
       </div>
@@ -144,6 +178,7 @@
         <div class="time">
           <input id="on-local" class="mono local-input" placeholder="HH:MM:SS" inputmode="numeric" pattern="[0-9:]*" maxlength="8">
           <span id="on-utc" class="mono small muted utc">—</span>
+          <button class="copy-btn" type="button" data-copy-target="on-local" aria-label="Copy ON value">Copy</button>
         </div>
         <button class="btn warn" id="btn-on-reset">Reset</button>
       </div>
@@ -152,6 +187,7 @@
         <div class="time">
           <input id="in-local" class="mono local-input" placeholder="HH:MM:SS" inputmode="numeric" pattern="[0-9:]*" maxlength="8">
           <span id="in-utc" class="mono small muted utc">—</span>
+          <button class="copy-btn" type="button" data-copy-target="in-local" aria-label="Copy IN value">Copy</button>
         </div>
         <button class="btn warn" id="btn-in-reset">Reset</button>
       </div>
@@ -160,11 +196,17 @@
         <div class="section-title">Hobbs</div>
         <div class="row">
           <div class="label">Start:</div>
-          <input id="hobbs-start" class="mono local-input" placeholder="Start" inputmode="decimal" pattern="[0-9.]*">
+          <div class="input-with-copy">
+            <input id="hobbs-start" class="mono local-input" placeholder="Start" inputmode="decimal" pattern="[0-9.]*">
+            <button class="copy-btn" type="button" data-copy-target="hobbs-start" aria-label="Copy Hobbs start">Copy</button>
+          </div>
         </div>
         <div class="row">
           <div class="label">End:</div>
-          <input id="hobbs-end" class="mono local-input" placeholder="End" inputmode="decimal" pattern="[0-9.]*">
+          <div class="input-with-copy">
+            <input id="hobbs-end" class="mono local-input" placeholder="End" inputmode="decimal" pattern="[0-9.]*">
+            <button class="copy-btn" type="button" data-copy-target="hobbs-end" aria-label="Copy Hobbs end">Copy</button>
+          </div>
           <span id="hobbs-total" class="mono small muted">—</span>
         </div>
         <div class="row">
@@ -176,11 +218,17 @@
         <div class="section-title">Tach</div>
         <div class="row">
           <div class="label">Start:</div>
-          <input id="tach-start" class="mono local-input" placeholder="Start" inputmode="decimal" pattern="[0-9.]*">
+          <div class="input-with-copy">
+            <input id="tach-start" class="mono local-input" placeholder="Start" inputmode="decimal" pattern="[0-9.]*">
+            <button class="copy-btn" type="button" data-copy-target="tach-start" aria-label="Copy Tach start">Copy</button>
+          </div>
         </div>
         <div class="row">
           <div class="label">End:</div>
-          <input id="tach-end" class="mono local-input" placeholder="End" inputmode="decimal" pattern="[0-9.]*">
+          <div class="input-with-copy">
+            <input id="tach-end" class="mono local-input" placeholder="End" inputmode="decimal" pattern="[0-9.]*">
+            <button class="copy-btn" type="button" data-copy-target="tach-end" aria-label="Copy Tach end">Copy</button>
+          </div>
           <span id="tach-total" class="mono small muted">—</span>
         </div>
         <div class="row">
@@ -201,14 +249,27 @@
           <div class="label">Start:</div>
           <div class="two-col">
             <input id="fuel-start" class="mono local-input" placeholder="USG" inputmode="decimal" pattern="[0-9.]*">
-            <input id="fuel-start-lbs" class="mono local-input" placeholder="lbs" inputmode="decimal" pattern="[0-9.]*">
+            <div class="input-with-copy">
+              <input id="fuel-start-lbs" class="mono local-input" placeholder="lbs" inputmode="decimal" pattern="[0-9.]*">
+              <button class="copy-btn" type="button" id="fuel-start-copy" data-copy-target="fuel-start-lbs" aria-label="Copy fuel start">Copy</button>
+            </div>
           </div>
         </div>
         <div class="row">
           <div class="label">End:</div>
           <div class="two-col">
             <input id="fuel-end" class="mono local-input" placeholder="USG" inputmode="decimal" pattern="[0-9.]*">
-            <input id="fuel-end-lbs" class="mono local-input" placeholder="lbs" inputmode="decimal" pattern="[0-9.]*">
+            <div class="input-with-copy">
+              <input id="fuel-end-lbs" class="mono local-input" placeholder="lbs" inputmode="decimal" pattern="[0-9.]*">
+              <button class="copy-btn" type="button" id="fuel-end-copy" data-copy-target="fuel-end-lbs" aria-label="Copy fuel end">Copy</button>
+            </div>
+          </div>
+        </div>
+        <div class="row">
+          <div class="copy-mode-label">Copy fuel as:</div>
+          <div class="copy-mode-toggle" role="group" aria-label="Fuel copy unit">
+            <button type="button" id="fuel-copy-usg" data-unit="usg">USG</button>
+            <button type="button" id="fuel-copy-lbs" data-unit="lbs">LBS</button>
           </div>
         </div>
         <div class="row">
@@ -221,12 +282,18 @@
       <div class="grid">
         <div>
           <div class="badge">BLOCK (OUT → IN)</div>
-          <div class="kpi mono" id="block-hhmm">—</div>
+          <div class="kpi-with-copy">
+            <div class="kpi mono" id="block-hhmm">—</div>
+            <button class="copy-btn" type="button" id="block-copy" data-copy-duration="block" aria-label="Copy block time">Copy</button>
+          </div>
           <div class="mono small muted" id="block-decimals">—</div>
         </div>
         <div>
           <div class="badge">AIR (OFF → ON)</div>
-          <div class="kpi mono" id="air-hhmm">—</div>
+          <div class="kpi-with-copy">
+            <div class="kpi mono" id="air-hhmm">—</div>
+            <button class="copy-btn" type="button" id="air-copy" data-copy-duration="air" aria-label="Copy air time">Copy</button>
+          </div>
           <div class="mono small muted" id="air-decimals">—</div>
         </div>
         <div>
