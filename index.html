@@ -19,42 +19,86 @@
     header { padding: 16px; display:flex; align-items:center; gap:12px; background:rgba(255,255,255,0.03); border-bottom: 1px solid rgba(255,255,255,0.08); position:sticky; top:0; backdrop-filter:saturate(120%) blur(6px); }
       header img { width:48px; height:48px; border-radius:8px; }
     header h1 { font-size: 22px; margin:0; }
-    main { padding: 20px; max-width: 900px; margin: 0 auto; }
-    .grid { display:grid; grid-template-columns: 1fr; gap: 16px; }
-    @media (min-width: 720px){ .grid { grid-template-columns: 1fr 1fr; } }
-    .card { background:var(--card); border:1px solid rgba(255,255,255,0.08); border-radius: 14px; padding: 16px; }
-    .row { display:flex; align-items:center; gap:12px; flex-wrap:wrap; }
-    .row + .row { margin-top: 10px; }
-    .btn { border:0; border-radius: 10px; padding: 14px 20px; font-weight: 600; cursor:pointer; font-size:18px; }
+    main { padding: 20px; max-width: 960px; margin: 0 auto; display:flex; flex-direction:column; gap:24px; }
+    .card { background:var(--card); border:1px solid rgba(255,255,255,0.08); border-radius: 18px; padding: 20px; display:flex; flex-direction:column; gap:20px; }
+    .card-title { margin:0; font-size:14px; letter-spacing:.08em; text-transform:uppercase; color:var(--muted); }
+    .field { display:grid; gap:12px 16px; grid-template-columns: 1fr; }
+    @media (min-width: 640px) {
+      .field { grid-template-columns: minmax(0,180px) minmax(0,1fr); align-items:center; }
+    }
+    @media (max-width: 639px) {
+      .card { padding:18px; }
+    }
+    .field__label { display:flex; align-items:center; gap:10px; flex-wrap:wrap; }
+    .field__body { display:flex; flex-direction:column; gap:10px; width:100%; }
+    .field__secondary { font-size:14px; color:var(--muted); }
+    .time-field .field__body { display:grid; grid-template-columns: minmax(0,1fr) auto; gap:10px; align-items:center; }
+    .time-field .field__secondary { justify-self:end; text-align:right; }
+    @media (max-width: 639px) {
+      .time-field .field__body { grid-template-columns: 1fr; }
+      .time-field .field__secondary { justify-self:flex-start; }
+    }
+    .btn { border:0; border-radius: 12px; padding: 14px 20px; font-weight: 600; cursor:pointer; font-size:17px; }
     .btn.primary { background: var(--ok); color: #062c1f; }
     .btn.warn { background: var(--warn); color: #251a02; }
     .btn.muted { background: rgba(255,255,255,0.08); color: var(--ink); }
     .btn.block { width: 100%; }
     .btn:disabled { background: rgba(255,255,255,0.08); color: var(--muted); cursor:not-allowed; }
+    .btn.compact { padding: 10px 16px; font-size:15px; }
     .kpi { font-size: 32px; font-weight: 700; }
     .mono { font-family: ui-monospace, SFMono-Regular, Menlo, monospace; }
     .muted { color: var(--muted); }
-      .label {
-        min-width: 80px;
-        font-weight:700;
-        font-size:22px;
-        padding:8px 12px;
-        color:inherit;
-      }
-      button.label {
-        background: var(--accent);
-        color: #062c1f;
-        border:none;
-        border-radius:8px;
-        cursor:pointer;
-      }
-      button.label:disabled {
+    .copy-btn {
+      background: rgba(255,255,255,0.08);
+      color: var(--ink);
+      border:1px solid rgba(255,255,255,0.18);
+      border-radius: 6px;
+      padding:6px 10px;
+      font-size: 14px;
+      font-weight:600;
+      cursor:pointer;
+    }
+    .copy-btn:focus {
+      outline:2px solid var(--accent);
+      outline-offset:2px;
+    }
+    .copy-btn:disabled {
+      opacity:0.6;
+      cursor:not-allowed;
+    }
+    .input-with-copy {
+      display:grid;
+      grid-template-columns: minmax(0,1fr) auto;
+      gap:10px;
+      align-items:center;
+      width:100%;
+    }
+    .label, .field-tag {
+      display:inline-flex;
+      align-items:center;
+      justify-content:center;
+      font-weight:700;
+      font-size:18px;
+      padding:10px 16px;
+      border-radius:12px;
+      letter-spacing:0.04em;
+      text-transform:uppercase;
+      background:rgba(255,255,255,0.06);
+      border:1px solid rgba(255,255,255,0.08);
+    }
+    .field-tag { color:var(--muted); }
+    button.label {
+      background: var(--accent);
+      color: #062c1f;
+      border:none;
+      cursor:pointer;
+    }
+    button.label:disabled {
         background: rgba(255,255,255,0.04);
         color: var(--muted);
         border:1px solid rgba(255,255,255,0.1);
         cursor: not-allowed;
       }
-    .time { flex:1; display:flex; align-items:baseline; gap:6px; min-width:160px; flex-wrap:wrap; }
     .local-input {
       font-weight:700;
       background:rgba(255,255,255,0.06);
@@ -65,7 +109,6 @@
       font-family:inherit;
       font-size:24px;
       width:100%;
-      max-width:140px;
     }
     .local-input::placeholder { color: var(--muted); }
     .local-input:focus {
@@ -77,17 +120,36 @@
       color: var(--muted);
       background: rgba(255,255,255,0.04);
     }
-    .utc { width:72px; }
     .small { font-size: 16px; }
-    footer { margin: 24px 0; text-align:center; color: var(--muted); font-size: 12px; }
+    footer { margin: 24px 0; text-align:center; color: var(--muted); font-size: 12px; display:flex; flex-direction:column; gap:6px; align-items:center; }
     #tz { background: transparent; color: var(--ink); border:1px solid rgba(255,255,255,0.2); border-radius:6px; padding:2px 4px; }
-      .two-col { display:grid; grid-template-columns: 1fr 1fr; gap: 10px; flex: 1; }
+    .two-col { display:grid; grid-template-columns: repeat(auto-fit,minmax(160px,1fr)); gap: 12px; width:100%; }
     .badge { display:inline-block; padding:4px 8px; border-radius:999px; background:rgba(255,255,255,0.06); border:1px solid rgba(255,255,255,0.08); }
-    .section-title { font-size:14px; letter-spacing:.08em; text-transform:uppercase; color:var(--muted); margin: 0 0 8px; }
     details { background: rgba(255,255,255,0.04); border-radius: 10px; padding: 10px 12px; }
     summary { cursor: pointer; }
     a { color: var(--accent); }
     .spacer { height:8px; }
+    .kpi-with-copy { display:flex; align-items:center; gap:12px; flex-wrap:wrap; }
+    .metric-grid { display:grid; gap:16px; grid-template-columns: repeat(auto-fit,minmax(200px,1fr)); }
+    .metric { background: rgba(255,255,255,0.04); border-radius:14px; padding:16px; display:flex; flex-direction:column; gap:12px; }
+    .metric .badge { align-self:flex-start; }
+    .card-actions { display:flex; flex-wrap:wrap; gap:12px; }
+    .card-actions .btn { flex:1 1 100%; }
+    @media (min-width: 640px) {
+      .card-actions { justify-content:flex-end; }
+      .card-actions .btn { flex:0 0 auto; min-width:160px; }
+    }
+    .inline-actions { display:flex; align-items:center; gap:12px; flex-wrap:wrap; }
+    .copy-mode-label { font-size:16px; font-weight:600; }
+    .fuel-copy-controls { display:flex; flex-direction:column; gap:8px; }
+    @media (min-width: 640px) {
+      .fuel-copy-controls { flex-direction:row; align-items:center; justify-content:space-between; }
+    }
+    .copy-mode-toggle { display:inline-flex; border:1px solid rgba(255,255,255,0.18); border-radius:8px; overflow:hidden; }
+    .copy-mode-toggle button { background:transparent; color:var(--ink); border:0; padding:8px 14px; font-weight:600; cursor:pointer; }
+    .copy-mode-toggle button.active { background:var(--accent); color:#062c1f; }
+    .copy-mode-toggle button:focus { outline:2px solid var(--accent); outline-offset:2px; }
+    .copy-mode-label { font-size:16px; font-weight:600; }
   </style>
 </head>
 <body>
@@ -113,138 +175,225 @@
       </ul>
     </details>
     <div class="spacer"></div>
-    <section class="card">
-      <div class="row">
-        <div class="label">Trip:</div>
-        <input id="trip-number" class="mono local-input" placeholder="#" inputmode="numeric" pattern="[0-9]*">
-      </div>
-      <div class="row">
-        <div class="label">Leg:</div>
-        <input id="leg-number" class="mono local-input" placeholder="#" inputmode="numeric" pattern="[0-9]*">
-      </div>
-      <div class="spacer"></div>
-      <div class="row">
-        <button class="label" id="btn-out" type="button">OUT:</button>
-        <div class="time">
-          <input id="out-local" class="mono local-input" placeholder="HH:MM:SS" inputmode="numeric" pattern="[0-9:]*" maxlength="8">
-          <span id="out-utc" class="mono small muted utc">—</span>
+    <section class="card card--times">
+      <h2 class="card-title">Flight Times</h2>
+      <div class="field">
+        <div class="field__label">
+          <span class="field-tag">Trip</span>
         </div>
-        <button class="btn warn" id="btn-out-reset">Reset</button>
-      </div>
-      <div class="row">
-        <button class="label" id="btn-off" type="button">OFF:</button>
-        <div class="time">
-          <input id="off-local" class="mono local-input" placeholder="HH:MM:SS" inputmode="numeric" pattern="[0-9:]*" maxlength="8">
-          <span id="off-utc" class="mono small muted utc">—</span>
+        <div class="field__body">
+          <input id="trip-number" class="mono local-input" placeholder="#" inputmode="numeric" pattern="[0-9]*">
         </div>
-        <button class="btn warn" id="btn-off-reset">Reset</button>
       </div>
-      <div class="row">
-        <button class="label" id="btn-on" type="button">ON:</button>
-        <div class="time">
-          <input id="on-local" class="mono local-input" placeholder="HH:MM:SS" inputmode="numeric" pattern="[0-9:]*" maxlength="8">
-          <span id="on-utc" class="mono small muted utc">—</span>
+      <div class="field">
+        <div class="field__label">
+          <span class="field-tag">Leg</span>
         </div>
-        <button class="btn warn" id="btn-on-reset">Reset</button>
+        <div class="field__body">
+          <input id="leg-number" class="mono local-input" placeholder="#" inputmode="numeric" pattern="[0-9]*">
+        </div>
       </div>
-      <div class="row">
-        <button class="label" id="btn-in" type="button">IN:</button>
-        <div class="time">
-          <input id="in-local" class="mono local-input" placeholder="HH:MM:SS" inputmode="numeric" pattern="[0-9:]*" maxlength="8">
-          <span id="in-utc" class="mono small muted utc">—</span>
+      <div class="field time-field">
+        <div class="field__label">
+          <button class="label" id="btn-out" type="button">OUT</button>
+          <button class="btn warn compact" id="btn-out-reset">Reset</button>
         </div>
-        <button class="btn warn" id="btn-in-reset">Reset</button>
+        <div class="field__body">
+          <div class="input-with-copy">
+            <input id="out-local" class="mono local-input" placeholder="HH:MM:SS" inputmode="numeric" pattern="[0-9:]*" maxlength="8">
+            <button class="copy-btn" type="button" data-copy-target="out-local" aria-label="Copy OUT value">Copy</button>
+          </div>
+          <span id="out-utc" class="field__secondary mono">—</span>
+        </div>
+      </div>
+      <div class="field time-field">
+        <div class="field__label">
+          <button class="label" id="btn-off" type="button">OFF</button>
+          <button class="btn warn compact" id="btn-off-reset">Reset</button>
+        </div>
+        <div class="field__body">
+          <div class="input-with-copy">
+            <input id="off-local" class="mono local-input" placeholder="HH:MM:SS" inputmode="numeric" pattern="[0-9:]*" maxlength="8">
+            <button class="copy-btn" type="button" data-copy-target="off-local" aria-label="Copy OFF value">Copy</button>
+          </div>
+          <span id="off-utc" class="field__secondary mono">—</span>
+        </div>
+      </div>
+      <div class="field time-field">
+        <div class="field__label">
+          <button class="label" id="btn-on" type="button">ON</button>
+          <button class="btn warn compact" id="btn-on-reset">Reset</button>
+        </div>
+        <div class="field__body">
+          <div class="input-with-copy">
+            <input id="on-local" class="mono local-input" placeholder="HH:MM:SS" inputmode="numeric" pattern="[0-9:]*" maxlength="8">
+            <button class="copy-btn" type="button" data-copy-target="on-local" aria-label="Copy ON value">Copy</button>
+          </div>
+          <span id="on-utc" class="field__secondary mono">—</span>
+        </div>
+      </div>
+      <div class="field time-field">
+        <div class="field__label">
+          <button class="label" id="btn-in" type="button">IN</button>
+          <button class="btn warn compact" id="btn-in-reset">Reset</button>
+        </div>
+        <div class="field__body">
+          <div class="input-with-copy">
+            <input id="in-local" class="mono local-input" placeholder="HH:MM:SS" inputmode="numeric" pattern="[0-9:]*" maxlength="8">
+            <button class="copy-btn" type="button" data-copy-target="in-local" aria-label="Copy IN value">Copy</button>
+          </div>
+          <span id="in-utc" class="field__secondary mono">—</span>
+        </div>
       </div>
     </section>
+
       <section class="card">
-        <div class="section-title">Hobbs</div>
-        <div class="row">
-          <div class="label">Start:</div>
-          <input id="hobbs-start" class="mono local-input" placeholder="Start" inputmode="decimal" pattern="[0-9.]*">
+        <h2 class="card-title">Hobbs</h2>
+        <div class="field">
+          <div class="field__label">
+            <span class="field-tag">Start</span>
+          </div>
+          <div class="field__body">
+            <div class="input-with-copy">
+              <input id="hobbs-start" class="mono local-input" placeholder="Start" inputmode="decimal" pattern="[0-9.]*">
+              <button class="copy-btn" type="button" data-copy-target="hobbs-start" aria-label="Copy Hobbs start">Copy</button>
+            </div>
+          </div>
         </div>
-        <div class="row">
-          <div class="label">End:</div>
-          <input id="hobbs-end" class="mono local-input" placeholder="End" inputmode="decimal" pattern="[0-9.]*">
-          <span id="hobbs-total" class="mono small muted">—</span>
+        <div class="field">
+          <div class="field__label">
+            <span class="field-tag">End</span>
+          </div>
+          <div class="field__body">
+            <div class="input-with-copy">
+              <input id="hobbs-end" class="mono local-input" placeholder="End" inputmode="decimal" pattern="[0-9.]*">
+              <button class="copy-btn" type="button" data-copy-target="hobbs-end" aria-label="Copy Hobbs end">Copy</button>
+            </div>
+            <span id="hobbs-total" class="field__secondary mono">—</span>
+          </div>
         </div>
-        <div class="row">
-          <button class="btn warn" id="btn-hobbs-reset">Reset</button>
+        <div class="card-actions">
+          <button class="btn warn compact" id="btn-hobbs-reset">Reset</button>
         </div>
       </section>
 
       <section class="card">
-        <div class="section-title">Tach</div>
-        <div class="row">
-          <div class="label">Start:</div>
-          <input id="tach-start" class="mono local-input" placeholder="Start" inputmode="decimal" pattern="[0-9.]*">
+        <h2 class="card-title">Tach</h2>
+        <div class="field">
+          <div class="field__label">
+            <span class="field-tag">Start</span>
+          </div>
+          <div class="field__body">
+            <div class="input-with-copy">
+              <input id="tach-start" class="mono local-input" placeholder="Start" inputmode="decimal" pattern="[0-9.]*">
+              <button class="copy-btn" type="button" data-copy-target="tach-start" aria-label="Copy Tach start">Copy</button>
+            </div>
+          </div>
         </div>
-        <div class="row">
-          <div class="label">End:</div>
-          <input id="tach-end" class="mono local-input" placeholder="End" inputmode="decimal" pattern="[0-9.]*">
-          <span id="tach-total" class="mono small muted">—</span>
+        <div class="field">
+          <div class="field__label">
+            <span class="field-tag">End</span>
+          </div>
+          <div class="field__body">
+            <div class="input-with-copy">
+              <input id="tach-end" class="mono local-input" placeholder="End" inputmode="decimal" pattern="[0-9.]*">
+              <button class="copy-btn" type="button" data-copy-target="tach-end" aria-label="Copy Tach end">Copy</button>
+            </div>
+            <span id="tach-total" class="field__secondary mono">—</span>
+          </div>
         </div>
-        <div class="row">
-          <button class="btn warn" id="btn-tach-reset">Reset</button>
+        <div class="card-actions">
+          <button class="btn warn compact" id="btn-tach-reset">Reset</button>
         </div>
       </section>
 
       <section class="card">
-        <div class="section-title">Fuel</div>
-        <div class="row">
-          <div class="label">Type:</div>
-          <select id="fuel-type" class="mono local-input">
-            <option value="100LL">100LL</option>
-            <option value="JetA">Jet A</option>
-          </select>
-        </div>
-        <div class="row">
-          <div class="label">Start:</div>
-          <div class="two-col">
-            <input id="fuel-start" class="mono local-input" placeholder="USG" inputmode="decimal" pattern="[0-9.]*">
-            <input id="fuel-start-lbs" class="mono local-input" placeholder="lbs" inputmode="decimal" pattern="[0-9.]*">
+        <h2 class="card-title">Fuel</h2>
+        <div class="field">
+          <div class="field__label">
+            <span class="field-tag">Type</span>
+          </div>
+          <div class="field__body">
+            <select id="fuel-type" class="mono local-input">
+              <option value="100LL">100LL</option>
+              <option value="JetA">Jet A</option>
+            </select>
           </div>
         </div>
-        <div class="row">
-          <div class="label">End:</div>
-          <div class="two-col">
-            <input id="fuel-end" class="mono local-input" placeholder="USG" inputmode="decimal" pattern="[0-9.]*">
-            <input id="fuel-end-lbs" class="mono local-input" placeholder="lbs" inputmode="decimal" pattern="[0-9.]*">
+        <div class="field">
+          <div class="field__label">
+            <span class="field-tag">Start</span>
+          </div>
+          <div class="field__body">
+            <div class="two-col">
+              <input id="fuel-start" class="mono local-input" placeholder="USG" inputmode="decimal" pattern="[0-9.]*">
+              <div class="input-with-copy">
+                <input id="fuel-start-lbs" class="mono local-input" placeholder="lbs" inputmode="decimal" pattern="[0-9.]*">
+                <button class="copy-btn" type="button" id="fuel-start-copy" data-copy-target="fuel-start-lbs" aria-label="Copy fuel start">Copy</button>
+              </div>
+            </div>
           </div>
         </div>
-        <div class="row">
-          <button class="btn warn" id="btn-fuel-reset">Reset</button>
+        <div class="field">
+          <div class="field__label">
+            <span class="field-tag">End</span>
+          </div>
+          <div class="field__body">
+            <div class="two-col">
+              <input id="fuel-end" class="mono local-input" placeholder="USG" inputmode="decimal" pattern="[0-9.]*">
+              <div class="input-with-copy">
+                <input id="fuel-end-lbs" class="mono local-input" placeholder="lbs" inputmode="decimal" pattern="[0-9.]*">
+                <button class="copy-btn" type="button" id="fuel-end-copy" data-copy-target="fuel-end-lbs" aria-label="Copy fuel end">Copy</button>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="fuel-copy-controls">
+          <div class="copy-mode-label">Copy fuel as:</div>
+          <div class="copy-mode-toggle" role="group" aria-label="Fuel copy unit">
+            <button type="button" id="fuel-copy-usg" data-unit="usg">USG</button>
+            <button type="button" id="fuel-copy-lbs" data-unit="lbs">LBS</button>
+          </div>
+        </div>
+        <div class="card-actions">
+          <button class="btn warn compact" id="btn-fuel-reset">Reset</button>
         </div>
       </section>
 
     <section class="card">
-      <div class="section-title">Totals</div>
-      <div class="grid">
-        <div>
+      <h2 class="card-title">Totals</h2>
+      <div class="metric-grid">
+        <div class="metric">
           <div class="badge">BLOCK (OUT → IN)</div>
-          <div class="kpi mono" id="block-hhmm">—</div>
+          <div class="kpi-with-copy">
+            <div class="kpi mono" id="block-hhmm">—</div>
+            <button class="copy-btn" type="button" id="block-copy" data-copy-duration="block" aria-label="Copy block time">Copy</button>
+          </div>
           <div class="mono small muted" id="block-decimals">—</div>
         </div>
-        <div>
+        <div class="metric">
           <div class="badge">AIR (OFF → ON)</div>
-          <div class="kpi mono" id="air-hhmm">—</div>
+          <div class="kpi-with-copy">
+            <div class="kpi mono" id="air-hhmm">—</div>
+            <button class="copy-btn" type="button" id="air-copy" data-copy-duration="air" aria-label="Copy air time">Copy</button>
+          </div>
           <div class="mono small muted" id="air-decimals">—</div>
         </div>
-        <div>
+        <div class="metric">
           <div class="badge">HOBBS USED</div>
           <div class="kpi mono" id="hobbs-used">—</div>
         </div>
-        <div>
+        <div class="metric">
           <div class="badge">TACH USED</div>
           <div class="kpi mono" id="tach-used">—</div>
         </div>
-        <div>
+        <div class="metric">
           <div class="badge">FUEL USED</div>
           <div class="kpi mono" id="fuel-used-usg">—</div>
           <div class="mono small muted" id="fuel-used-lbs">—</div>
         </div>
       </div>
-      <div class="spacer"></div>
-      <div class="row">
+      <div class="card-actions">
         <button class="btn primary" id="btn-next-flight">Next flight</button>
         <button class="btn muted" id="btn-copy">Copy all</button>
         <button class="btn warn" id="btn-reset">Reset All</button>
@@ -252,9 +401,9 @@
     </section>
 
     <section class="card" id="install-card">
-      <div class="section-title">Install</div>
+      <h2 class="card-title">Install</h2>
       <p>This is a Progressive Web App. On iPhone: Share → <em>Add to Home Screen</em>. On desktop Chrome/Edge: install from the address bar.</p>
-      <div id="install-ui" class="row" style="display:none;">
+      <div id="install-ui" class="inline-actions" style="display:none;">
         <button class="btn primary" id="btn-install">Install App</button>
       </div>
     </section>
