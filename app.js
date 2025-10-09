@@ -170,12 +170,27 @@
     if (tzSetting.mode === "manual") opts.timeZone = tzSetting.tz;
     return new Date(d).toLocaleTimeString([], opts);
   }
+  function toLocalHHMMString(d) {
+    const opts = { hour: "2-digit", minute: "2-digit", hour12: false };
+    if (tzSetting.mode === "manual") opts.timeZone = tzSetting.tz;
+    return new Date(d).toLocaleTimeString([], opts);
+  }
   function toUTCString(d) {
     return (
       new Date(d).toLocaleTimeString([], {
         hour: "2-digit",
         minute: "2-digit",
         second: "2-digit",
+        hour12: false,
+        timeZone: "UTC"
+      }) + "Z"
+    );
+  }
+  function toUTCHHMMString(d) {
+    return (
+      new Date(d).toLocaleTimeString([], {
+        hour: "2-digit",
+        minute: "2-digit",
         hour12: false,
         timeZone: "UTC"
       }) + "Z"
@@ -526,7 +541,7 @@
     }
     const push = (label, val) => {
       if (!val) return;
-      lines.push(`${label}: Local ${toLocalString(val)} | UTC ${toUTCString(val)}`);
+      lines.push(`${label}: Local ${toLocalHHMMString(val)} | UTC ${toUTCHHMMString(val)}`);
     };
     push("OUT", times.out);
     push("OFF", times.off);
@@ -596,9 +611,22 @@
     });
   }
 
-  function sanitizeCopyValue(value) {
+  function sanitizeCopyValue(value, options = {}) {
     if (value == null) return "";
-    return String(value).replace(/[^0-9.]/g, "");
+    const str = String(value).trim();
+    if (!str) return "";
+    let sanitized = str.replace(/[^0-9.]/g, "");
+    if (options.dropSeconds && sanitized.length >= 4) {
+      sanitized = sanitized.slice(0, 4);
+    }
+    if (options.wholeNumber && sanitized) {
+      let whole = sanitized.split(".")[0];
+      if (!whole && sanitized) {
+        whole = "0";
+      }
+      sanitized = whole;
+    }
+    return sanitized;
   }
 
   function fallbackCopyText(text) {
@@ -619,8 +647,8 @@
     return success;
   }
 
-  function copyTextValue(raw) {
-    const sanitized = sanitizeCopyValue(raw);
+  function copyTextValue(raw, options = {}) {
+    const sanitized = sanitizeCopyValue(raw, options);
     if (!sanitized) return Promise.reject(new Error("empty"));
     if (navigator.clipboard && typeof navigator.clipboard.writeText === "function") {
       return navigator.clipboard.writeText(sanitized).catch(() => {
@@ -638,7 +666,10 @@
     const el = document.getElementById(id);
     if (!el) return Promise.reject(new Error("missing element"));
     const value = "value" in el ? el.value : el.textContent;
-    return copyTextValue(value);
+    const options = {};
+    if (/^(out|off|on|in)-local$/.test(id)) options.dropSeconds = true;
+    if (/^fuel-(start|end)(-lbs)?$/.test(id)) options.wholeNumber = true;
+    return copyTextValue(value, options);
   }
 
   function durationToHHMM(mins) {
